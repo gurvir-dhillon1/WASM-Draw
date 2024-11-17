@@ -1,0 +1,6 @@
+make:
+	emcc main.cpp -s WASM=1 -s USE_SDL=2 -O3 -s ASYNCIFY -s \
+	NO_EXIT_RUNTIME=1 -s EXPORTED_RUNTIME_METHODS=['ccall'] \
+	--shell-file html_template/template.html -o main.html
+clean:
+	rm main.js main.wasm main.html
