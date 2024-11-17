@@ -6,32 +6,24 @@
 #include <emscripten/html5.h>
 #endif
 
-struct Pixel {
-    int x, y;
-    Uint8 r, g, b;
-};
-
 struct GameState {
     bool running;
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
-    std::vector<Pixel> pixels;
+    SDL_Texture* drawingTexture = nullptr;
     bool mousePressed = false;
     int screenWidth = 800;
     int screenHeight = 600;
+    int lastMouseX = -1;
+    int lastMouseY = -1;
 };
 
 GameState gameState;
 
-void draw_pixel(SDL_Renderer* renderer, Pixel pixel) {
-    SDL_SetRenderDrawColor(renderer, pixel.r, pixel.g, pixel.b, 255);
-    SDL_RenderDrawPoint(renderer, pixel.x, pixel.y);
-}
-
 extern "C" {
     EMSCRIPTEN_KEEPALIVE
     void resize_renderer(int width, int height) {
-        std::cout << "Resizing to: " << width << "x" << height << std::endl;
+//        std::cout << "Resizing to: " << width << "x" << height << std::endl;
         gameState.screenWidth = width;
         gameState.screenHeight = height;
         SDL_SetWindowSize(gameState.window, width, height);
@@ -39,8 +31,11 @@ extern "C" {
     }
 
     EMSCRIPTEN_KEEPALIVE
-    void clear_pixels() {
-        gameState.pixels.clear();
+    void clear_canvas() {
+        SDL_SetRenderTarget(gameState.renderer, gameState.drawingTexture);
+        SDL_SetRenderDrawColor(gameState.renderer, 0, 0, 0, 255);
+        SDL_RenderClear(gameState.renderer);
+        SDL_SetRenderTarget(gameState.renderer, NULL);
     }
 }
 
@@ -48,8 +43,6 @@ void game_loop(void* arg) {
     GameState* state = static_cast<GameState*>(arg);
     SDL_Event event;
 
-    SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
-    SDL_RenderClear(state->renderer);
 
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
@@ -58,26 +51,22 @@ void game_loop(void* arg) {
 //                         << " X: " << event.motion.x 
 //                         << " Y: " << event.motion.y << std::endl;
                 if (state->mousePressed) {
-                    Pixel newPixel;
-                    newPixel.x = event.motion.x;
-                    newPixel.y = event.motion.y;
-                    newPixel.r = rand() % 256;
-                    newPixel.g = rand() % 256;
-                    newPixel.b = rand() % 256;
-                    state->pixels.push_back(newPixel);
+                    SDL_SetRenderTarget(state->renderer, state->drawingTexture);
+                    SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+                    SDL_RenderDrawLine(state->renderer, state->lastMouseX,
+                            state->lastMouseY, event.motion.x, event.motion.y);
+                    SDL_SetRenderTarget(state->renderer, NULL);
+
+                    state->lastMouseX = event.motion.x;
+                    state->lastMouseY = event.motion.y;
                 }
                 break;
             case SDL_MOUSEBUTTONDOWN:
                 if (event.button.button == SDL_BUTTON_LEFT) {
                     std::cout << "mouse pressed down" << std::endl;
                     state->mousePressed = true;
-                    Pixel newPixel;
-                    newPixel.x = event.button.x;
-                    newPixel.y = event.button.y;
-                    newPixel.r = rand() % 256;
-                    newPixel.g = rand() % 256;
-                    newPixel.b = rand() % 256;
-                    state->pixels.push_back(newPixel);
+                    state->lastMouseX = event.motion.x;
+                    state->lastMouseY = event.motion.y;
                 }
                 break;
             case SDL_MOUSEBUTTONUP:
@@ -91,11 +80,10 @@ void game_loop(void* arg) {
                 break;
         }
     } 
-    
-    for (const Pixel& pixel : state->pixels) {
-        draw_pixel(state->renderer, pixel);
-    }
 
+    SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+    SDL_RenderClear(state->renderer);
+    SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
     SDL_RenderPresent(state->renderer);
 }
 
@@ -117,6 +105,19 @@ int main() {
         return 1;
     }
 
+    gameState.drawingTexture = SDL_CreateTexture(
+        gameState.renderer,
+        SDL_PIXELFORMAT_RGBA8888,
+        SDL_TEXTUREACCESS_TARGET,
+        width,
+        height
+    );
+
+    SDL_SetRenderTarget(gameState.renderer, gameState.drawingTexture);
+    SDL_SetRenderDrawColor(gameState.renderer, 0, 0, 0, 255);
+    SDL_RenderClear(gameState.renderer);
+    SDL_SetRenderTarget(gameState.renderer, NULL);
+
     SDL_SetWindowTitle(gameState.window, "web game");
 
 
@@ -128,6 +129,9 @@ int main() {
     }
 #endif
 
+    if (gameState.drawingTexture) {
+        SDL_DestroyTexture(gameState.drawingTexture);
+    }
     SDL_DestroyRenderer(gameState.renderer);
     SDL_DestroyWindow(gameState.window);
     SDL_Quit();
