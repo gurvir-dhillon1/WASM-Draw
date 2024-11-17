@@ -1,6 +1,6 @@
-# WebAssembly-Game
+# WebAssembly-Drawing-Tool
 
-This is a C++ game developed to be played in the browser using WebAssembly.
+This is a C++ drawing tool developed to be used in the browser using WebAssembly.
 
 ## Prerequisites
 
