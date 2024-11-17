@@ -24,8 +24,32 @@ extern "C" {
     EMSCRIPTEN_KEEPALIVE
     void resize_renderer(int width, int height) {
 //        std::cout << "Resizing to: " << width << "x" << height << std::endl;
+        SDL_Texture* oldTexture = gameState.drawingTexture;
+        int oldWidth, oldHeight;
+        SDL_QueryTexture(oldTexture, NULL, NULL, &oldWidth, &oldHeight);
+
+        gameState.drawingTexture = SDL_CreateTexture(
+            gameState.renderer,
+            SDL_PIXELFORMAT_RGBA8888,
+            SDL_TEXTUREACCESS_TARGET,
+            width,
+            height
+        );
+
+        SDL_SetRenderTarget(gameState.renderer, gameState.drawingTexture);
+        SDL_SetRenderDrawColor(gameState.renderer, 0, 0, 0, 255);
+        SDL_RenderClear(gameState.renderer);
+
+        SDL_Rect SrcRect = {0, 0, oldWidth, oldHeight};
+        SDL_Rect DstRect = {0, 0, oldWidth, oldHeight};
+        SDL_RenderCopy(gameState.renderer, oldTexture, &SrcRect, &DstRect);
+        SDL_SetRenderTarget(gameState.renderer, NULL);
+
+        SDL_DestroyTexture(oldTexture);
+
         gameState.screenWidth = width;
         gameState.screenHeight = height;
+
         SDL_SetWindowSize(gameState.window, width, height);
         SDL_RenderSetLogicalSize(gameState.renderer, width, height);
     }
