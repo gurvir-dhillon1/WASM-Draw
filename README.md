@@ -4,7 +4,7 @@ This is a C++ drawing tool developed to be used in the browser using WebAssembly
 
 ## Prerequisites
 
-Before running the game, you need to install the following tools:
+Before running WASM-Draw, you need to install the following tools:
 
 - [Emscripten Compiler](https://emscripten.org/docs/getting_started/downloads.html): This tool will allow you to compile C++ code into WebAssembly.
 
@@ -26,11 +26,11 @@ python3 -m http.server
 
 5. Open a browser and navigate to the appropriate localhost port, typically `http://localhost:8000`.
 
-## Playing the Game
+## Using WASM-Draw
 
-Once the server is running, you can play the game directly in your browser.
+Once the server is running, you use the tool directly in your browser.
 
 ## Troubleshooting
 
-- If the game isn't loading or you're facing issues, make sure that you have properly set up the environment and compiled the game.
-- If the game doesn't render or interact as expected, check the browser console for errors.
+- If the webpage isn't loading or you're facing issues, make sure that you have properly set up the environment and compiled WASM-Draw.
+- If the webpage doesn't render or interact as expected, check the browser console for errors.
