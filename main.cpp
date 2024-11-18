@@ -11,9 +11,16 @@ struct GameState {
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
     SDL_Texture* drawingTexture = nullptr;
+
     bool mousePressed = false;
+
+    int lineMode = 0;
+    int circleMode = 0;
+    int squareMode = 0;
+
     int screenWidth = 800;
     int screenHeight = 600;
+
     int lastMouseX = -1;
     int lastMouseY = -1;
 };
@@ -61,6 +68,30 @@ extern "C" {
         SDL_RenderClear(gameState.renderer);
         SDL_SetRenderTarget(gameState.renderer, NULL);
     }
+
+    EMSCRIPTEN_KEEPALIVE
+    int set_line_mode() {
+        gameState.lineMode = !gameState.lineMode;
+        gameState.circleMode = 0;
+        gameState.squareMode = 0;
+        return gameState.lineMode;
+    }
+
+    EMSCRIPTEN_KEEPALIVE
+    int set_circle_mode() {
+        gameState.lineMode = 0;
+        gameState.circleMode = !gameState.circleMode;
+        gameState.squareMode = 0;
+        return gameState.circleMode;
+    }
+
+    EMSCRIPTEN_KEEPALIVE
+    int set_square_mode() {
+        gameState.lineMode = 0;
+        gameState.circleMode = 0;
+        gameState.squareMode = !gameState.squareMode;
+        return gameState.squareMode;
+    }
 }
 
 void game_loop(void* arg) {
@@ -75,14 +106,27 @@ void game_loop(void* arg) {
 //                         << " X: " << event.motion.x 
 //                         << " Y: " << event.motion.y << std::endl;
                 if (state->mousePressed) {
-                    SDL_SetRenderTarget(state->renderer, state->drawingTexture);
-                    SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
-                    SDL_RenderDrawLine(state->renderer, state->lastMouseX,
-                            state->lastMouseY, event.motion.x, event.motion.y);
-                    SDL_SetRenderTarget(state->renderer, NULL);
+                    if (state->lineMode) {
+                        SDL_SetRenderTarget(state->renderer, NULL);
+                        SDL_SetRenderDrawColor(state->renderer, 0, 0, 0, 255);
+                        SDL_RenderClear(state->renderer);
 
-                    state->lastMouseX = event.motion.x;
-                    state->lastMouseY = event.motion.y;
+                        SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
+
+                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+                        SDL_RenderDrawLine(state->renderer, state->lastMouseX, state->lastMouseY,
+                                event.motion.x, event.motion.y);
+                        SDL_RenderPresent(state->renderer);
+                    } else {
+                        SDL_SetRenderTarget(state->renderer, state->drawingTexture);
+                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+                        SDL_RenderDrawLine(state->renderer, state->lastMouseX,
+                                state->lastMouseY, event.motion.x, event.motion.y);
+                        SDL_SetRenderTarget(state->renderer, NULL);
+
+                        state->lastMouseX = event.motion.x;
+                        state->lastMouseY = event.motion.y;
+                    }
                 }
                 break;
             case SDL_MOUSEBUTTONDOWN:
@@ -97,6 +141,20 @@ void game_loop(void* arg) {
                 if (event.button.button == SDL_BUTTON_LEFT) {
                     std::cout << "mouse released" << std::endl;
                     state->mousePressed = false;
+                    if (state->lineMode) {
+                        SDL_SetRenderTarget(state->renderer, state->drawingTexture);
+                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+                        SDL_RenderDrawLine(state->renderer, state->lastMouseX, state->lastMouseY,
+                                event.motion.x, event.motion.y);
+
+                        SDL_SetRenderTarget(state->renderer, NULL);
+                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+                        SDL_RenderClear(state->renderer);
+                        SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
+                        SDL_RenderPresent(state->renderer);
+
+                        state->lineMode = 0;
+                    }                
                 }
                 break;
             case SDL_QUIT:
@@ -108,7 +166,9 @@ void game_loop(void* arg) {
     SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
     SDL_RenderClear(state->renderer);
     SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
-    SDL_RenderPresent(state->renderer);
+    if (!(state->lineMode || state->circleMode || state->squareMode)) {
+        SDL_RenderPresent(state->renderer);
+    }
 }
 
 #ifdef __EMSCRIPTEN__
