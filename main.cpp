@@ -94,6 +94,33 @@ extern "C" {
     }
 }
 
+// midpoint circle algorithm
+void draw_circle(SDL_Renderer* renderer, int centerX, int centerY, int radius) {
+    int x = radius;
+    int y = 0;
+    int d = 1 - radius;
+
+    while (x >= y) {
+        SDL_RenderDrawPoint(renderer, centerX + x, centerY + y);
+        SDL_RenderDrawPoint(renderer, centerX + y, centerY + x);
+        SDL_RenderDrawPoint(renderer, centerX - y, centerY + x);
+        SDL_RenderDrawPoint(renderer, centerX - x, centerY + y);
+        SDL_RenderDrawPoint(renderer, centerX - x, centerY - y);
+        SDL_RenderDrawPoint(renderer, centerX - y, centerY - x);
+        SDL_RenderDrawPoint(renderer, centerX + y, centerY - x);
+        SDL_RenderDrawPoint(renderer, centerX + x, centerY - y);
+
+        y += 1;
+
+        if (d <= 0) {
+            d += 2 * y + 1;
+        } else {
+            x -= 1;
+            d += 2 * (y - x) + 1;
+        }
+    }
+}
+
 void game_loop(void* arg) {
     GameState* state = static_cast<GameState*>(arg);
     SDL_Event event;
@@ -116,6 +143,21 @@ void game_loop(void* arg) {
                         SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
                         SDL_RenderDrawLine(state->renderer, state->lastMouseX, state->lastMouseY,
                                 event.motion.x, event.motion.y);
+                        SDL_RenderPresent(state->renderer);
+                    } else if (state->circleMode) {
+                        SDL_SetRenderTarget(state->renderer, NULL);
+                        SDL_SetRenderDrawColor(state->renderer, 0, 0, 0, 255);
+                        SDL_RenderClear(state->renderer);
+
+                        SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
+
+                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+
+                        int centerX = state->lastMouseX;
+                        int centerY = state->lastMouseY;
+                        int radius = sqrt(pow(event.motion.x - centerX, 2) + pow(event.motion.y - centerY, 2));
+                        draw_circle(state->renderer, centerX, centerY, radius);
+
                         SDL_RenderPresent(state->renderer);
                     } else {
                         SDL_SetRenderTarget(state->renderer, state->drawingTexture);
@@ -154,7 +196,20 @@ void game_loop(void* arg) {
                         SDL_RenderPresent(state->renderer);
 
                         state->lineMode = 0;
-                    }                
+                    } else if (state->circleMode) {
+                        SDL_SetRenderTarget(state->renderer, state->drawingTexture);
+                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+                        int centerX = state->lastMouseX;
+                        int centerY = state->lastMouseY;
+                        int radius = sqrt(pow(event.motion.x - centerX, 2) + pow(event.motion.y - centerY, 2));
+                        draw_circle(state->renderer, centerX, centerY, radius);
+                        SDL_SetRenderTarget(state->renderer, NULL);
+                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+                        SDL_RenderClear(state->renderer);
+                        SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
+                        SDL_RenderPresent(state->renderer);
+                        state->circleMode = 0;
+                    }
                 }
                 break;
             case SDL_QUIT:
