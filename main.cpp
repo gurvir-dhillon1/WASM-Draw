@@ -121,6 +121,38 @@ void draw_circle(SDL_Renderer* renderer, int centerX, int centerY, int radius) {
     }
 }
 
+void draw_square(SDL_Renderer* renderer, int startX, int startY, int endX, int endY) {
+    int dx = endX - startX;
+    int dy = endY - startY;
+
+    int sideLength = std::max(abs(dx), abs(dy));
+
+    // Maintain the original startX, startY as the anchor point
+    // and adjust the end points to form a square
+    int x2, y2;
+    
+    // Determine the direction of drag and adjust accordingly
+    if (dx >= 0 && dy >= 0) {        // Dragging right and down
+        x2 = startX + sideLength;
+        y2 = startY + sideLength;
+    } else if (dx >= 0 && dy < 0) {  // Dragging right and up
+        x2 = startX + sideLength;
+        y2 = startY - sideLength;
+    } else if (dx < 0 && dy >= 0) {  // Dragging left and down
+        x2 = startX - sideLength;
+        y2 = startY + sideLength;
+    } else {                         // Dragging left and up
+        x2 = startX - sideLength;
+        y2 = startY - sideLength;
+    }
+
+    // Draw the square
+    SDL_RenderDrawLine(renderer, startX, startY, x2, startY);     // Top edge
+    SDL_RenderDrawLine(renderer, x2, startY, x2, y2);            // Right edge
+    SDL_RenderDrawLine(renderer, x2, y2, startX, y2);            // Bottom edge
+    SDL_RenderDrawLine(renderer, startX, y2, startX, startY);    // Left edge
+}
+
 void game_loop(void* arg) {
     GameState* state = static_cast<GameState*>(arg);
     SDL_Event event;
@@ -157,6 +189,20 @@ void game_loop(void* arg) {
                         int centerY = state->lastMouseY;
                         int radius = sqrt(pow(event.motion.x - centerX, 2) + pow(event.motion.y - centerY, 2));
                         draw_circle(state->renderer, centerX, centerY, radius);
+
+                        SDL_RenderPresent(state->renderer);
+                    } else if (state->squareMode) {
+
+                        std::cout << "Square mode is active during motion" << std::endl;
+                        SDL_SetRenderTarget(state->renderer, NULL);
+                        SDL_SetRenderDrawColor(state->renderer, 0, 0, 0, 255);
+                        SDL_RenderClear(state->renderer);
+
+                        SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
+
+                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+                        
+                        draw_square(state->renderer, state->lastMouseX, state->lastMouseY, event.motion.x, event.motion.y);
 
                         SDL_RenderPresent(state->renderer);
                     } else {
@@ -209,6 +255,16 @@ void game_loop(void* arg) {
                         SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
                         SDL_RenderPresent(state->renderer);
                         state->circleMode = 0;
+                    } else if (state->squareMode) {
+                        SDL_SetRenderTarget(state->renderer, state->drawingTexture);
+                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+                        draw_square(state->renderer, state->lastMouseX, state->lastMouseY, event.motion.x, event.motion.y);
+                        SDL_SetRenderTarget(state->renderer, NULL);
+                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+                        SDL_RenderClear(state->renderer);
+                        SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
+                        SDL_RenderPresent(state->renderer);
+                        state->squareMode = 0;
                     }
                 }
                 break;
