@@ -11,9 +11,16 @@ struct GameState {
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
     SDL_Texture* drawingTexture = nullptr;
+
     bool mousePressed = false;
+
+    int lineMode = 0;
+    int circleMode = 0;
+    int squareMode = 0;
+
     int screenWidth = 800;
     int screenHeight = 600;
+
     int lastMouseX = -1;
     int lastMouseY = -1;
 };
@@ -61,6 +68,89 @@ extern "C" {
         SDL_RenderClear(gameState.renderer);
         SDL_SetRenderTarget(gameState.renderer, NULL);
     }
+
+    EMSCRIPTEN_KEEPALIVE
+    int set_line_mode() {
+        gameState.lineMode = !gameState.lineMode;
+        gameState.circleMode = 0;
+        gameState.squareMode = 0;
+        return gameState.lineMode;
+    }
+
+    EMSCRIPTEN_KEEPALIVE
+    int set_circle_mode() {
+        gameState.lineMode = 0;
+        gameState.circleMode = !gameState.circleMode;
+        gameState.squareMode = 0;
+        return gameState.circleMode;
+    }
+
+    EMSCRIPTEN_KEEPALIVE
+    int set_square_mode() {
+        gameState.lineMode = 0;
+        gameState.circleMode = 0;
+        gameState.squareMode = !gameState.squareMode;
+        return gameState.squareMode;
+    }
+}
+
+// midpoint circle algorithm
+void draw_circle(SDL_Renderer* renderer, int centerX, int centerY, int radius) {
+    int x = radius;
+    int y = 0;
+    int d = 1 - radius;
+
+    while (x >= y) {
+        SDL_RenderDrawPoint(renderer, centerX + x, centerY + y);
+        SDL_RenderDrawPoint(renderer, centerX + y, centerY + x);
+        SDL_RenderDrawPoint(renderer, centerX - y, centerY + x);
+        SDL_RenderDrawPoint(renderer, centerX - x, centerY + y);
+        SDL_RenderDrawPoint(renderer, centerX - x, centerY - y);
+        SDL_RenderDrawPoint(renderer, centerX - y, centerY - x);
+        SDL_RenderDrawPoint(renderer, centerX + y, centerY - x);
+        SDL_RenderDrawPoint(renderer, centerX + x, centerY - y);
+
+        y += 1;
+
+        if (d <= 0) {
+            d += 2 * y + 1;
+        } else {
+            x -= 1;
+            d += 2 * (y - x) + 1;
+        }
+    }
+}
+
+void draw_square(SDL_Renderer* renderer, int startX, int startY, int endX, int endY) {
+    int dx = endX - startX;
+    int dy = endY - startY;
+
+    int sideLength = std::max(abs(dx), abs(dy));
+
+    // Maintain the original startX, startY as the anchor point
+    // and adjust the end points to form a square
+    int x2, y2;
+    
+    // Determine the direction of drag and adjust accordingly
+    if (dx >= 0 && dy >= 0) {        // Dragging right and down
+        x2 = startX + sideLength;
+        y2 = startY + sideLength;
+    } else if (dx >= 0 && dy < 0) {  // Dragging right and up
+        x2 = startX + sideLength;
+        y2 = startY - sideLength;
+    } else if (dx < 0 && dy >= 0) {  // Dragging left and down
+        x2 = startX - sideLength;
+        y2 = startY + sideLength;
+    } else {                         // Dragging left and up
+        x2 = startX - sideLength;
+        y2 = startY - sideLength;
+    }
+
+    // Draw the square
+    SDL_RenderDrawLine(renderer, startX, startY, x2, startY);     // Top edge
+    SDL_RenderDrawLine(renderer, x2, startY, x2, y2);            // Right edge
+    SDL_RenderDrawLine(renderer, x2, y2, startX, y2);            // Bottom edge
+    SDL_RenderDrawLine(renderer, startX, y2, startX, startY);    // Left edge
 }
 
 void game_loop(void* arg) {
@@ -75,14 +165,56 @@ void game_loop(void* arg) {
 //                         << " X: " << event.motion.x 
 //                         << " Y: " << event.motion.y << std::endl;
                 if (state->mousePressed) {
-                    SDL_SetRenderTarget(state->renderer, state->drawingTexture);
-                    SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
-                    SDL_RenderDrawLine(state->renderer, state->lastMouseX,
-                            state->lastMouseY, event.motion.x, event.motion.y);
-                    SDL_SetRenderTarget(state->renderer, NULL);
+                    if (state->lineMode) {
+                        SDL_SetRenderTarget(state->renderer, NULL);
+                        SDL_SetRenderDrawColor(state->renderer, 0, 0, 0, 255);
+                        SDL_RenderClear(state->renderer);
 
-                    state->lastMouseX = event.motion.x;
-                    state->lastMouseY = event.motion.y;
+                        SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
+
+                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+                        SDL_RenderDrawLine(state->renderer, state->lastMouseX, state->lastMouseY,
+                                event.motion.x, event.motion.y);
+                        SDL_RenderPresent(state->renderer);
+                    } else if (state->circleMode) {
+                        SDL_SetRenderTarget(state->renderer, NULL);
+                        SDL_SetRenderDrawColor(state->renderer, 0, 0, 0, 255);
+                        SDL_RenderClear(state->renderer);
+
+                        SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
+
+                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+
+                        int centerX = state->lastMouseX;
+                        int centerY = state->lastMouseY;
+                        int radius = sqrt(pow(event.motion.x - centerX, 2) + pow(event.motion.y - centerY, 2));
+                        draw_circle(state->renderer, centerX, centerY, radius);
+
+                        SDL_RenderPresent(state->renderer);
+                    } else if (state->squareMode) {
+
+                        std::cout << "Square mode is active during motion" << std::endl;
+                        SDL_SetRenderTarget(state->renderer, NULL);
+                        SDL_SetRenderDrawColor(state->renderer, 0, 0, 0, 255);
+                        SDL_RenderClear(state->renderer);
+
+                        SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
+
+                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+                        
+                        draw_square(state->renderer, state->lastMouseX, state->lastMouseY, event.motion.x, event.motion.y);
+
+                        SDL_RenderPresent(state->renderer);
+                    } else {
+                        SDL_SetRenderTarget(state->renderer, state->drawingTexture);
+                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+                        SDL_RenderDrawLine(state->renderer, state->lastMouseX,
+                                state->lastMouseY, event.motion.x, event.motion.y);
+                        SDL_SetRenderTarget(state->renderer, NULL);
+
+                        state->lastMouseX = event.motion.x;
+                        state->lastMouseY = event.motion.y;
+                    }
                 }
                 break;
             case SDL_MOUSEBUTTONDOWN:
@@ -97,6 +229,43 @@ void game_loop(void* arg) {
                 if (event.button.button == SDL_BUTTON_LEFT) {
                     std::cout << "mouse released" << std::endl;
                     state->mousePressed = false;
+                    if (state->lineMode) {
+                        SDL_SetRenderTarget(state->renderer, state->drawingTexture);
+                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+                        SDL_RenderDrawLine(state->renderer, state->lastMouseX, state->lastMouseY,
+                                event.motion.x, event.motion.y);
+
+                        SDL_SetRenderTarget(state->renderer, NULL);
+                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+                        SDL_RenderClear(state->renderer);
+                        SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
+                        SDL_RenderPresent(state->renderer);
+
+                        state->lineMode = 0;
+                    } else if (state->circleMode) {
+                        SDL_SetRenderTarget(state->renderer, state->drawingTexture);
+                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+                        int centerX = state->lastMouseX;
+                        int centerY = state->lastMouseY;
+                        int radius = sqrt(pow(event.motion.x - centerX, 2) + pow(event.motion.y - centerY, 2));
+                        draw_circle(state->renderer, centerX, centerY, radius);
+                        SDL_SetRenderTarget(state->renderer, NULL);
+                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+                        SDL_RenderClear(state->renderer);
+                        SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
+                        SDL_RenderPresent(state->renderer);
+                        state->circleMode = 0;
+                    } else if (state->squareMode) {
+                        SDL_SetRenderTarget(state->renderer, state->drawingTexture);
+                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+                        draw_square(state->renderer, state->lastMouseX, state->lastMouseY, event.motion.x, event.motion.y);
+                        SDL_SetRenderTarget(state->renderer, NULL);
+                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+                        SDL_RenderClear(state->renderer);
+                        SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
+                        SDL_RenderPresent(state->renderer);
+                        state->squareMode = 0;
+                    }
                 }
                 break;
             case SDL_QUIT:
@@ -108,7 +277,9 @@ void game_loop(void* arg) {
     SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
     SDL_RenderClear(state->renderer);
     SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
-    SDL_RenderPresent(state->renderer);
+    if (!(state->lineMode || state->circleMode || state->squareMode)) {
+        SDL_RenderPresent(state->renderer);
+    }
 }
 
 #ifdef __EMSCRIPTEN__

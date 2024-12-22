@@ -6,9 +6,11 @@
     <title>kittydraw</title>
     <link rel="icon" href="kittydraw.png" type="image/png">
     <style>
+/*
         body, button, canvas {
             cursor: url("mouse.png"), auto !important;
         }
+*/
         body {
             margin: 0;
             width: 100vw;
@@ -30,19 +32,50 @@
             z-index: 1000;
             border-bottom: 2px solid black;
         }
+
+        .draw-options {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+        }
+        .title {
+            padding: 10px;
+        }
     </style>
 </head>
 <body>
     <div style="width:100%">
         <div id="menu-bar" class="menu-bar">
-            <h1>web game</h1>
+            <div class="title">
+                <h3>wasm draw</h3>
+            </div>
             <div>click and move your mouse on the canvas below to draw</div>
-            <button 
-                id="clear-canvas" 
-                onclick="Module.ccall('clear_canvas', null, [])"
-            >
-                clear canvas
-            </button>
+            <div class="draw-options">
+                <button
+                    id="line-mode-button"
+                    onclick="onLineClick()"
+                >
+                    line
+                </button>
+                <button
+                    id="circle-mode-button"
+                    onclick="onCircleClick()"
+                >
+                    circle
+                </button>
+                <button
+                    id="square-mode-button"
+                    onclick="onSquareClick()"
+                >
+                    square
+                </button>
+                <button 
+                    id="clear-canvas" 
+                    onclick="Module.ccall('clear_canvas', null, [])"
+                >
+                    clear canvas
+                </button>
+            </div>
         </div>
         <div id="game-container">
             <canvas id="canvas"></canvas>
@@ -85,6 +118,21 @@
             width = window.innerWidth;
             height = window.innerHeight; 
             Module.ccall("resize_renderer", null, ["number", "number"], [width, height]);
+        }
+
+        const onLineClick = () => {
+            const lineMode = Module.ccall("set_line_mode", "number", []);
+            console.log("Line Mode:", lineMode);
+        }
+
+        const onCircleClick = () => {
+            const circleMode = Module.ccall("set_circle_mode", "number", []);
+            console.log("Circle Mode:", circleMode);
+        }
+
+        const onSquareClick = () => {
+            const squareMode = Module.ccall("set_square_mode", "number", []);
+            console.log("Square Mode:", squareMode);
         }
 
         window.addEventListener("resize", resizeCanvas);
