@@ -24,6 +24,10 @@ jobs:
           emcc main.cpp -s WASM=1 -s USE_SDL=2 -O3 -s ASYNCIFY -s \
           NO_EXIT_RUNTIME=1 -s EXPORTED_RUNTIME_METHODS=['ccall'] \
           --shell-file html_template/template.html -o index.html
+      - name: Set Git user identity
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "github-actions@github.com"
       - name: Force add files to commit
         run: |
           # Force add files to the commit (ignores .gitignore)
