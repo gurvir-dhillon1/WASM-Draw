@@ -2,3 +2,4 @@
 *.wasm
 index.js
 index.html
+emsdk
