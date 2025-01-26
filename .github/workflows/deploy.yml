@@ -17,8 +17,11 @@ jobs:
           ./emsdk install latest
           ./emsdk activate latest
           source ./emsdk_env.sh
+          echo "EMSDK_ENV activated"
       - name: Build WASM
-        run: emcc src/main.c -o public/index.html
+        run: |
+          source emsdk/emsdk_env.sh
+          emcc src/main.c -o public/index.html
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
