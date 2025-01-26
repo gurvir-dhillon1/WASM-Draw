@@ -1,6 +1,6 @@
 # WebAssembly-Drawing-Tool
 
-This is a C++ drawing tool developed to be used in the browser using WebAssembly. If you want to host it locally, please follow the instructions below. Otherwise, feel free to check it out at [](https://gdhillon2.github.io/WASM-Draw/).
+This is a C++ drawing tool developed to be used in the browser using WebAssembly. If you want to host it locally, please follow the instructions below. Otherwise, feel free to check it out [here](https://gdhillon2.github.io/WASM-Draw/).
 
 ## Prerequisites
 
