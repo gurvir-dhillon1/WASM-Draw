@@ -1,4 +1,4 @@
 .*
 *.wasm
-main.js
-main.html
+index.js
+index.html
