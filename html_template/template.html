@@ -129,7 +129,7 @@
             const buttons = document.querySelectorAll(".draw-options button");
             buttons.forEach(button => button.classList.remove("active"));
 
-            document.getElementById(activeButtonId).classList.add("active");
+            if (activeButtonId) document.getElementById(activeButtonId).classList.add("active");
         }
 
         const onLineClick = () => {
@@ -149,6 +149,19 @@
             console.log("Square Mode:", squareMode);
             setActiveButton("square-mode-button");
         }
+
+        document.getElementById("canvas").addEventListener("mouseup", () => {
+            console.log("mouse up")
+            setTimeout(() => {
+                const lineMode = Module.ccall("get_line_mode", "number", []);
+                const circleMode = Module.ccall("get_circle_mode", "number", []);
+                const squareMode = Module.ccall("get_square_mode", "number", []);
+
+                if (lineMode == 0 && circleMode == 0 && squareMode == 0) {
+                    setActiveButton(null);
+                }
+            }, 100);
+        })
 
         window.addEventListener("resize", resizeCanvas);
     </script>
