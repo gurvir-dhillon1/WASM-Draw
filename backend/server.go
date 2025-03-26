@@ -5,10 +5,11 @@ import (
     "net/http"
     "log"
     "flag"
+    "sync"
 )
 
 var address = flag.String("addr", "localhost:3000", "http service address")
-
+var mu sync.Mutex
 var upgrader = websocket.Upgrader{
     CheckOrigin: func(r *http.Request) bool {
         return true
@@ -35,17 +36,24 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
         if message_type == websocket.CloseMessage {
             log.Println("client disconnected")
+            mu.Lock()
+            delete(clients, conn)
+            mu.Unlock()
             return
         }
 
-        log.Printf("received payload: %s", payload) 
-        err = conn.WriteMessage(message_type, payload)
-        if err != nil {
-            log.Println("WriteMessage: ", err)
-            return
-
+        for client := range clients {
+            err = client.WriteMessage(message_type, payload)
+            if err != nil {
+                log.Println("WriteMessage: ", err)
+                client.Close()
+                mu.Lock()
+                delete(clients, client)
+                mu.Unlock()
+                continue
+            }
+            log.Printf("received payload: %s", payload) 
         }
-        log.Printf("sent payload: %s", payload)
     }
 }
 

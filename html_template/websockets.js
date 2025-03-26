@@ -23,17 +23,7 @@ const open_connection = () => {
     }
 
     websocket.onmessage = (event) => {
-        const data = JSON.parse(event.data)
-        if (data.type === "canvas_sync") {
-            const img = new Image()
-            img.onload = () => {
-                const canvas = document.getElementById("canvas")
-                const ctx = canvas.getContext("2d")
-                ctx.drawImage(img, 0, 0)
-            }
-            img.src = data.imageData
-        }
-
+        console.log("message received: ", event.data)
     }
 }
 
@@ -58,20 +48,6 @@ const send_message = (payload = "hello") => {
         console.log("client sent message: ", payload)
     } else {
         console.error(`websocket is not open, message "${payload}" not sent`)
-    }
-}
-
-const capture_and_send_canvas = () => {
-    const canvas = document.getElementById("canvas")
-    const canvas_data = canvas.toDataURL("image/png")
-
-    if (check_connection()) {
-        websocket.send(JSON.stringify({
-            type: "canvas_sync",
-            ImageData: canvas_data
-        }))
-    } else {
-        console.error("websocket is not open")
     }
 }
 
