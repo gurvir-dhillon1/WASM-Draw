@@ -6,6 +6,19 @@
 #include <emscripten/html5.h>
 #endif
 
+enum Draw_Modes {
+    LINE,   // disabled for now until regular drawing is working with websockets
+    CIRCLE, // disabled for now until lines are working with websockets
+    RECT    // not yet implemented
+};
+
+struct DrawCommand {
+    int startX, startY, endX, endY;
+};
+
+std::vector<DrawCommand> drawStack;
+int drawStackPtr = 0;
+
 struct GameState {
     bool running;
     SDL_Window* window = nullptr;
@@ -28,6 +41,15 @@ struct GameState {
 GameState gameState;
 
 extern "C" {
+    EMSCRIPTEN_KEEPALIVE
+    void draw_line(int startX, int startY, int endX, int endY) {
+        SDL_SetRenderTarget(gameState.renderer, gameState.drawingTexture);
+        SDL_SetRenderDrawColor(gameState.renderer, 255, 255, 255, 255);
+        SDL_RenderDrawLine(gameState.renderer, startX, startY, endX, endY);
+        SDL_SetRenderTarget(gameState.renderer, NULL);
+        drawStack.push_back({startX, startY, endX, endY});
+    }
+
     EMSCRIPTEN_KEEPALIVE
     void resize_renderer(int width, int height) {
 //        std::cout << "Resizing to: " << width << "x" << height << std::endl;
@@ -67,6 +89,7 @@ extern "C" {
         SDL_SetRenderDrawColor(gameState.renderer, 0, 0, 0, 255);
         SDL_RenderClear(gameState.renderer);
         SDL_SetRenderTarget(gameState.renderer, NULL);
+        drawStack.clear();
     }
 
     EMSCRIPTEN_KEEPALIVE
@@ -117,13 +140,7 @@ extern "C" {
     int get_last_mouse_y() {
         return gameState.lastMouseY;
     }
-}
 
-void draw_line(int startX, int startY, int endX, int endY) {
-    SDL_SetRenderTarget(gameState.renderer, gameState.drawingTexture);
-    SDL_SetRenderDrawColor(gameState.renderer, 255, 255, 255, 255);
-    SDL_RenderDrawLine(gameState.renderer, startX, startY, endX, endY);
-    SDL_SetRenderTarget(gameState.renderer, NULL);
 }
 
 // midpoint circle algorithm

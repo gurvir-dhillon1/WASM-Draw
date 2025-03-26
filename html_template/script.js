@@ -14,7 +14,7 @@ var Module = {
         }
     },
     setStatus: (text) => {
-        console.log(text);
+        if (text) console.log(text);
     },
     canvas: (function() {
         var canvas = document.getElementById("canvas");
@@ -59,6 +59,12 @@ const onSquareClick = () => {
     const squareMode = Module.ccall("set_square_mode", "number", []);
     console.log("Square Mode:", squareMode);
     setActiveButton("square-mode-button");
+}
+
+const getLastMousePosition = () => {
+    const x = Module.ccall("get_last_mouse_x", "number", []);
+    const y = Module.ccall("get_last_mouse_y", "number", []);
+    return [x, y]
 }
 
 document.getElementById("canvas").addEventListener("mouseup", () => {

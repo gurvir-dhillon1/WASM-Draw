@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>kittydraw</title>
+    <title>wasm draw</title>
     <link rel="icon" href="kittydraw.png" type="image/png">
     <style>
 /*
@@ -59,12 +59,14 @@
                 <button
                     id="line-mode-button"
                     onclick="onLineClick()"
+                    disabled
                 >
                     line
                 </button>
                 <button
                     id="circle-mode-button"
                     onclick="onCircleClick()"
+                    disabled
                 >
                     circle
                 </button>
@@ -82,12 +84,6 @@
                     clear canvas
                 </button>
             </div>
-            <button 
-                id="send-canvas" 
-                onclick="send_message('testing')"
-            >
-                send canvas
-            </button>
             <button
                 id="join-room"
             >

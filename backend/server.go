@@ -8,6 +8,11 @@ import (
     "sync"
 )
 
+const (
+    LINE = iota
+    CIRCLE
+)
+
 var address = flag.String("addr", "localhost:3000", "http service address")
 var mu sync.Mutex
 var upgrader = websocket.Upgrader{
