@@ -28,6 +28,7 @@ struct GameState {
 GameState gameState;
 
 extern "C" {
+    //NOTE: will need this to draw lines through the network
     EMSCRIPTEN_KEEPALIVE
     void draw_line(int startX, int startY, int endX, int endY) {
         SDL_SetRenderTarget(gameState.renderer, gameState.drawingTexture);
@@ -260,11 +261,6 @@ void game_loop(void* arg) {
                     state->mousePressed = false;
                     if (state->lineMode) {
                         draw_line(state->lastMouseX, state->lastMouseY, event.motion.x, event.motion.y);
-                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
-                        SDL_RenderClear(state->renderer);
-                        SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
-                        SDL_RenderPresent(state->renderer);
-
                         state->lineMode = 0;
                     } else if (state->circleMode) {
                         SDL_SetRenderTarget(state->renderer, state->drawingTexture);
@@ -274,21 +270,12 @@ void game_loop(void* arg) {
                         int radius = sqrt(pow(event.motion.x - centerX, 2) + pow(event.motion.y - centerY, 2));
                         draw_circle(state->renderer, centerX, centerY, radius);
                         SDL_SetRenderTarget(state->renderer, NULL);
-                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
-                        SDL_RenderClear(state->renderer);
-                        SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
-                        SDL_RenderPresent(state->renderer);
                         state->circleMode = 0;
                     } else if (state->squareMode) {
                         SDL_SetRenderTarget(state->renderer, state->drawingTexture);
                         SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
                         draw_square(state->renderer, state->lastMouseX, state->lastMouseY, event.motion.x, event.motion.y);
                         SDL_SetRenderTarget(state->renderer, NULL);
-                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
-                        SDL_RenderClear(state->renderer);
-                        SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
-                        SDL_RenderPresent(state->renderer);
-                        state->squareMode = 0;
                     }
                 }
                 break;
