@@ -71,6 +71,7 @@
                 <button
                     id="square-mode-button"
                     onclick="onSquareClick()"
+                    disabled
                 >
                     square
                 </button>
@@ -81,6 +82,12 @@
                     clear canvas
                 </button>
             </div>
+            <button 
+                id="send-canvas" 
+                onclick="capture_and_send_canvas()"
+            >
+                send canvas
+            </button>
             <button
                 id="join-room"
             >

@@ -28,15 +28,6 @@ struct GameState {
 GameState gameState;
 
 extern "C" {
-    //NOTE: will need this to draw lines through the network
-    EMSCRIPTEN_KEEPALIVE
-    void draw_line(int startX, int startY, int endX, int endY) {
-        SDL_SetRenderTarget(gameState.renderer, gameState.drawingTexture);
-        SDL_SetRenderDrawColor(gameState.renderer, 255, 255, 255, 255);
-        SDL_RenderDrawLine(gameState.renderer, startX, startY, endX, endY);
-        SDL_SetRenderTarget(gameState.renderer, NULL);
-    }
-
     EMSCRIPTEN_KEEPALIVE
     void resize_renderer(int width, int height) {
 //        std::cout << "Resizing to: " << width << "x" << height << std::endl;
@@ -126,6 +117,13 @@ extern "C" {
     int get_last_mouse_y() {
         return gameState.lastMouseY;
     }
+}
+
+void draw_line(int startX, int startY, int endX, int endY) {
+    SDL_SetRenderTarget(gameState.renderer, gameState.drawingTexture);
+    SDL_SetRenderDrawColor(gameState.renderer, 255, 255, 255, 255);
+    SDL_RenderDrawLine(gameState.renderer, startX, startY, endX, endY);
+    SDL_SetRenderTarget(gameState.renderer, NULL);
 }
 
 // midpoint circle algorithm
@@ -223,20 +221,6 @@ void game_loop(void* arg) {
                         int centerY = state->lastMouseY;
                         int radius = sqrt(pow(event.motion.x - centerX, 2) + pow(event.motion.y - centerY, 2));
                         draw_circle(state->renderer, centerX, centerY, radius);
-
-                        SDL_RenderPresent(state->renderer);
-                    } else if (state->squareMode) {
-
-                        std::cout << "Square mode is active during motion" << std::endl;
-                        SDL_SetRenderTarget(state->renderer, NULL);
-                        SDL_SetRenderDrawColor(state->renderer, 0, 0, 0, 255);
-                        SDL_RenderClear(state->renderer);
-
-                        SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
-
-                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
-                        
-                        draw_square(state->renderer, state->lastMouseX, state->lastMouseY, event.motion.x, event.motion.y);
 
                         SDL_RenderPresent(state->renderer);
                     } else {
