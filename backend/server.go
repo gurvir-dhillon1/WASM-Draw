@@ -45,6 +45,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
             return
 
         }
+        log.Printf("sent payload: %s", payload)
     }
 }
 
