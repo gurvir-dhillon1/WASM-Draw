@@ -29,6 +29,14 @@ GameState gameState;
 
 extern "C" {
     EMSCRIPTEN_KEEPALIVE
+    void draw_line(int startX, int startY, int endX, int endY) {
+        SDL_SetRenderTarget(gameState.renderer, gameState.drawingTexture);
+        SDL_SetRenderDrawColor(gameState.renderer, 255, 255, 255, 255);
+        SDL_RenderDrawLine(gameState.renderer, startX, startY, endX, endY);
+        SDL_SetRenderTarget(gameState.renderer, NULL);
+    }
+
+    EMSCRIPTEN_KEEPALIVE
     void resize_renderer(int width, int height) {
 //        std::cout << "Resizing to: " << width << "x" << height << std::endl;
         SDL_Texture* oldTexture = gameState.drawingTexture;
@@ -106,6 +114,16 @@ extern "C" {
     EMSCRIPTEN_KEEPALIVE
     int get_square_mode() {
         return gameState.squareMode;
+    }
+
+    EMSCRIPTEN_KEEPALIVE
+    int get_last_mouse_x() {
+        return gameState.lastMouseX;
+    }
+
+    EMSCRIPTEN_KEEPALIVE
+    int get_last_mouse_y() {
+        return gameState.lastMouseY;
     }
 }
 
@@ -221,11 +239,7 @@ void game_loop(void* arg) {
 
                         SDL_RenderPresent(state->renderer);
                     } else {
-                        SDL_SetRenderTarget(state->renderer, state->drawingTexture);
-                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
-                        SDL_RenderDrawLine(state->renderer, state->lastMouseX,
-                                state->lastMouseY, event.motion.x, event.motion.y);
-                        SDL_SetRenderTarget(state->renderer, NULL);
+                        draw_line(state->lastMouseX, state->lastMouseY, event.motion.x, event.motion.y);
 
                         state->lastMouseX = event.motion.x;
                         state->lastMouseY = event.motion.y;
@@ -245,12 +259,7 @@ void game_loop(void* arg) {
                     std::cout << "mouse released" << std::endl;
                     state->mousePressed = false;
                     if (state->lineMode) {
-                        SDL_SetRenderTarget(state->renderer, state->drawingTexture);
-                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
-                        SDL_RenderDrawLine(state->renderer, state->lastMouseX, state->lastMouseY,
-                                event.motion.x, event.motion.y);
-
-                        SDL_SetRenderTarget(state->renderer, NULL);
+                        draw_line(state->lastMouseX, state->lastMouseY, event.motion.x, event.motion.y);
                         SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
                         SDL_RenderClear(state->renderer);
                         SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
