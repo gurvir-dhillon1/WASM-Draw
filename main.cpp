@@ -395,7 +395,7 @@ int main() {
     SDL_RenderClear(gameState.renderer);
     SDL_SetRenderTarget(gameState.renderer, NULL);
 
-    SDL_SetWindowTitle(gameState.window, "web game");
+    SDL_SetWindowTitle(gameState.window, "wasm draw");
 
 
 #ifdef __EMSCRIPTEN__

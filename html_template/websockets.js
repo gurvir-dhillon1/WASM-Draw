@@ -1,7 +1,7 @@
 console.log("initing websockets")
 
 let websocket = null
-let mouse_pos_interval = null
+let draw_stack_interval = null
 
 const open_connection = () => {
     if (check_connection()) {
@@ -13,10 +13,32 @@ const open_connection = () => {
 
     websocket.onopen = () => {
         console.log("websocket connection established")
+        draw_stack_interval = setInterval(() => {
+            if (check_connection() && canvas_sync) {
+                draw_stack = canvas_sync.get_rest_of_draw_stack()
+                if (draw_stack.size() > 0) {
+                    let serialized_stack = []
+                    for (let i = 0; i < draw_stack.size(); ++i) {
+                        let cmd = draw_stack.get(i)
+                        serialized_stack.push({
+                            startX: cmd.startX,
+                            startY: cmd.startY,
+                            endX: cmd.endX,
+                            endY: cmd.endY,
+                            type: cmd.type
+                        })
+                    }
+                    websocket.send(JSON.stringify(serialized_stack))
+                }
+            }
+        }, 500);
+        
     }
 
     websocket.onclose = () => {
         console.log("websocket connection closed")
+        clearInterval(draw_stack_interval)
+        draw_stack_interval = null
     }
 
     websocket.onerror = (error) => {
@@ -26,7 +48,6 @@ const open_connection = () => {
     websocket.onmessage = (event) => {
         console.log("message received: ", event.data)
     }
-    start_mouse_pos()
 }
 
 const check_connection = () => {
@@ -37,7 +58,6 @@ const check_connection = () => {
 }
 
 const close_connection = () => {
-    stop_mouse_pos()
     if (check_connection()) {
         websocket.close(1000, "closing connection normally")
     } else {
@@ -65,16 +85,3 @@ document.getElementById("join-room").addEventListener("click", () => {
     }
 })
 
-const start_mouse_pos = () => {
-    if (mouse_pos_interval)
-        clearInterval(mouse_pos_interval)
-
-    mouse_pos_interval = setInterval(() => {
-        const [x,y] = getLastMousePosition()
-        send_message(`${x},${y}`)
-    }, 2000)
-}
-
-const stop_mouse_pos = () => {
-    clearInterval(mouse_pos_interval)
-}

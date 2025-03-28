@@ -1,4 +1,5 @@
 console.log("initializing script.js")
+let canvas_sync = null
 var Module = {
     preRun: [],
     postRun: [],
@@ -26,17 +27,14 @@ var Module = {
     })(),
     onRuntimeInitialized: () => {
         console.log("emscripten runtime initialized")
+        canvas_sync = new Module.getCanvasSync()
         resizeCanvas()
-        let canvas_sync = new Module.getCanvasSync()
-        const interval = setInterval(() => {
-            testCanvasSync(canvas_sync)
-        }, 1000);
     }
 }
 
 function resizeCanvas() {
-    width = window.innerWidth
-    height = window.innerHeight
+    let width = window.innerWidth
+    let height = window.innerHeight
     Module.ccall("resize_renderer", null, ["number", "number"], [width, height])
 }
 
@@ -72,7 +70,7 @@ const getLastMousePosition = () => {
 }
 
 const testCanvasSync = (canvas_sync) => {
-    const draw_stack = canvas_sync.get_full_draw_stack()
+    const draw_stack = canvas_sync.get_rest_of_draw_stack()
     try {
         console.log("-------------------------------")
         for (let i = 0; i < draw_stack.size(); ++i) {
