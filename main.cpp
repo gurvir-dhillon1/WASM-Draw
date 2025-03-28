@@ -277,7 +277,6 @@ void game_loop(void* arg) {
     GameState* state = static_cast<GameState*>(arg);
     SDL_Event event;
 
-    std::cout << "stack size: " << canvasSync.get_full_draw_stack().size() << std::endl;
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
             case SDL_MOUSEMOTION:

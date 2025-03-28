@@ -74,7 +74,17 @@ const getLastMousePosition = () => {
 const testCanvasSync = (canvas_sync) => {
     const draw_stack = canvas_sync.get_full_draw_stack()
     try {
-        console.log(draw_stack.size())
+        console.log("-------------------------------")
+        for (let i = 0; i < draw_stack.size(); ++i) {
+            let cmd = draw_stack.get(i)
+            console.log(
+                cmd.startX,
+                cmd.startY,
+                cmd.endX,
+                cmd.endY,
+                cmd.type
+            )
+        }
     } catch (err) {
         console.error("can't print size: ", err)
     }
