@@ -27,7 +27,10 @@ var Module = {
     onRuntimeInitialized: () => {
         console.log("emscripten runtime initialized")
         resizeCanvas()
-        testCanvasSync()
+        let canvas_sync = new Module.getCanvasSync()
+        const interval = setInterval(() => {
+            testCanvasSync(canvas_sync)
+        }, 1000);
     }
 }
 
@@ -68,18 +71,13 @@ const getLastMousePosition = () => {
     return [x, y]
 }
 
-const testCanvasSync = () => {
-    let canvas_sync = new Module.CanvasSync()
-    canvas_sync.add_draw_command(10, 10, 10, 10, 0)
+const testCanvasSync = (canvas_sync) => {
     const draw_stack = canvas_sync.get_full_draw_stack()
-    console.log("size:", draw_stack.size())
-    console.log(
-        draw_stack.get(0).startX,
-        draw_stack.get(0).startY,
-        draw_stack.get(0).endX,
-        draw_stack.get(0).endY,
-        draw_stack.get(0).type
-    )
+    try {
+        console.log(draw_stack.size())
+    } catch (err) {
+        console.error("can't print size: ", err)
+    }
 }
 
 document.getElementById("canvas").addEventListener("mouseup", () => {
