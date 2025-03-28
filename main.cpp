@@ -13,11 +13,65 @@ enum Draw_Modes {
 };
 
 struct DrawCommand {
-    int startX, startY, endX, endY;
+    int startX, startY, endX, endY, type;
 };
 
-std::vector<DrawCommand> drawStack;
-int drawStackPtr = 0;
+// declare function here since we use it in CanvasSync class
+extern "C" void draw_line(int startX, int startY, int endX, int endY);
+
+class CanvasSync {
+    private:
+        std::vector<DrawCommand> drawStack;
+        int drawStackPtr = 0;
+    public:
+        void add_draw_command(int startX, int startY, int endX, int endY, int type) {
+            drawStack.push_back({startX, startY, endX, endY, type});
+        }
+
+        std::vector<DrawCommand> get_full_draw_stack(){
+            return drawStack;
+        }
+
+        std::vector<DrawCommand> get_rest_of_draw_stack() {
+            int n = drawStackPtr;
+            drawStackPtr = drawStack.size();
+            return std::vector<DrawCommand>(drawStack.begin() + n, drawStack.end());
+        }
+        
+        void clear_draw_stack() {
+            drawStack.clear();
+            drawStackPtr = 0;
+        }
+
+        void replay_draw_stack() {
+            for (const auto& cmd : drawStack) {
+                if (cmd.type == LINE) {
+                    draw_line(cmd.startX, cmd.startY, cmd.endX, cmd.endY);
+                }
+                // add logic for circle and rect later
+            }
+            drawStackPtr = drawStack.size();
+        }
+};
+
+CanvasSync canvasSync;
+
+EMSCRIPTEN_BINDINGS(canvas_sync_module) {
+    emscripten::register_vector<DrawCommand>("VectorDrawCommand");
+    emscripten::class_<DrawCommand>("DrawCommand")
+        .property("startX", &DrawCommand::startX)
+        .property("startY", &DrawCommand::startY)
+        .property("endX", &DrawCommand::endX)
+        .property("endY", &DrawCommand::endY)
+        .property("type", &DrawCommand::type);
+    emscripten::class_<CanvasSync>("CanvasSync")
+        .constructor()
+        .function("add_draw_command", &CanvasSync::add_draw_command)
+        .function("get_full_draw_stack", &CanvasSync::get_full_draw_stack)
+        .function("get_rest_of_draw_stack", &CanvasSync::get_rest_of_draw_stack)
+        .function("clear_draw_stack", &CanvasSync::clear_draw_stack)
+        .function("replay_draw_stack", &CanvasSync::replay_draw_stack);
+}
 
 struct GameState {
     bool running;
@@ -47,7 +101,7 @@ extern "C" {
         SDL_SetRenderDrawColor(gameState.renderer, 255, 255, 255, 255);
         SDL_RenderDrawLine(gameState.renderer, startX, startY, endX, endY);
         SDL_SetRenderTarget(gameState.renderer, NULL);
-        drawStack.push_back({startX, startY, endX, endY});
+        canvasSync.add_draw_command(startX, startY, endX, endY, LINE);
     }
 
     EMSCRIPTEN_KEEPALIVE
@@ -89,7 +143,7 @@ extern "C" {
         SDL_SetRenderDrawColor(gameState.renderer, 0, 0, 0, 255);
         SDL_RenderClear(gameState.renderer);
         SDL_SetRenderTarget(gameState.renderer, NULL);
-        drawStack.clear();
+        canvasSync.clear_draw_stack();
     }
 
     EMSCRIPTEN_KEEPALIVE

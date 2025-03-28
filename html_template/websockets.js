@@ -72,7 +72,7 @@ const start_mouse_pos = () => {
     mouse_pos_interval = setInterval(() => {
         const [x,y] = getLastMousePosition()
         send_message(`${x},${y}`)
-    }, 2000);
+    }, 2000)
 }
 
 const stop_mouse_pos = () => {
