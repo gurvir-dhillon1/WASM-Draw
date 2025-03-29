@@ -50,7 +50,24 @@ const open_connection = () => {
     }
 
     websocket.onmessage = (event) => {
-        console.log("message received: ", event.data)
+        //console.log("message received: ", event.data)
+        let payload = JSON.parse(event.data)
+        for (const obj of payload) {
+            const startX = obj.startX
+            const startY = obj.startY
+            const endX = obj.endX
+            const endY = obj.endY
+            const type = obj.type
+
+            if (type === 0) {
+                Module.ccall(
+                    "draw_line",
+                    null,
+                    ["number", "number", "number", "number", "boolean"],
+                    [startX, startY, endX, endY, false]
+                )
+            }
+        }
     }
 }
 
