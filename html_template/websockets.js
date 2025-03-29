@@ -13,35 +13,39 @@ const open_connection = () => {
 
     websocket.onopen = () => {
         console.log("websocket connection established")
-        draw_stack_interval = setInterval(async () => {
+        const processDrawStack = async () => {
             if (check_connection() && canvas_sync) {
                 try {
                     let draw_stack = await canvas_sync.get_rest_of_draw_stack()
-                    if (draw_stack && draw_stack.size() > 0) {
-                        let serialized_stack = []
-                        for (let i = 0; i < draw_stack.size(); ++i) {
-                            let cmd = draw_stack.get(i)
-                            serialized_stack.push({
-                                startX: cmd.startX,
-                                startY: cmd.startY,
-                                endX: cmd.endX,
-                                endY: cmd.endY,
-                                type: cmd.type
-                            })
-                        }
-                        websocket.send(JSON.stringify(serialized_stack))
+                    // if we fail to get the next iteration, just get the entire draw stack
+                    // and redraw EVERYTHING, don't worry about performance idk what that is :P
+                    if (!draw_stack) {
+                        draw_stack = await canvas_sync.get_full_draw_stack()
                     }
+                    let serialized_stack = []
+                    for (let i = 0; i < draw_stack.size(); ++i) {
+                        let cmd = draw_stack.get(i)
+                        serialized_stack.push({
+                            startX: cmd.startX,
+                            startY: cmd.startY,
+                            endX: cmd.endX,
+                            endY: cmd.endY,
+                            type: cmd.type
+                        })
+                    }
+                    websocket.send(JSON.stringify(serialized_stack))
                 } catch (err) {
                     console.error("error getting or processing draw stack", err)
                 }
             }
-        }, 500);
-
+            draw_stack_interval = setTimeout(processDrawStack, 500);
+        }
+        processDrawStack()
     }
 
     websocket.onclose = () => {
         console.log("websocket connection closed")
-        clearInterval(draw_stack_interval)
+        clearTimeout(draw_stack_interval)
         draw_stack_interval = null
     }
 
@@ -63,7 +67,7 @@ const open_connection = () => {
                 Module.ccall(
                     "draw_line",
                     null,
-                    ["number", "number", "number", "number", "boolean"],
+                    ["number", "number", "number", "number", "number"],
                     [startX, startY, endX, endY, false]
                 )
             }
