@@ -2,6 +2,7 @@ package main
 
 import (
     "github.com/gorilla/websocket"
+    "encoding/json"
     "net/http"
     "log"
     "flag"
@@ -9,9 +10,19 @@ import (
 )
 
 const (
-    LINE = iota
+    FREE = iota
+    LINE
     CIRCLE
+    RECT
 )
+
+type DrawCommand struct {
+    StartX int      `json:"startX"`
+    StartY int      `json:"startY"`
+    EndX   int      `json:"endX"`
+    EndY   int      `json:"endY"`
+    Type   int      `json:"type"`
+}
 
 var address = flag.String("addr", "localhost:3000", "http service address")
 var mu sync.Mutex
@@ -62,10 +73,53 @@ func echo(w http.ResponseWriter, r *http.Request) {
     }
 }
 
+func serialize_points(w http.ResponseWriter, r *http.Request) {
+    conn, err := upgrader.Upgrade(w, r, nil)
+    if err != nil {
+        log.Println("Upgrade: connection failed")
+        return
+    }
+
+    clients[conn] = true
+    defer conn.Close()
+    log.Println("client connected")
+
+    for {
+        message_type, payload, err := conn.ReadMessage()
+        if err != nil {
+            log.Println("ReadMessage: err")
+            return
+        }
+
+        if message_type == websocket.CloseMessage {
+            log.Println("client disconnected")
+            mu.Lock()
+            delete(clients, conn)
+            mu.Unlock()
+            return
+        }
+        
+        // serialize draw commands
+        var draw_commands []DrawCommand
+        err = json.Unmarshal([]byte(payload), &draw_commands)
+        if err != nil {
+            log.Println("Unmarshal: ", err)
+            return
+        }
+        broadcast_data, err := json.Marshal(draw_commands)
+        if err != nil {
+            log.Println("Marshal: ", err)
+            return
+        }
+        log.Println("-------------------------------------------")
+        log.Println(string(broadcast_data))
+    }
+}
+
 func main() {
     flag.Parse()
     log.SetFlags(0)
-    http.HandleFunc("/ws", echo)
+    http.HandleFunc("/ws", serialize_points)
 
     log.Printf("server started at %v", *address)
 
