@@ -13,26 +13,30 @@ const open_connection = () => {
 
     websocket.onopen = () => {
         console.log("websocket connection established")
-        draw_stack_interval = setInterval(() => {
+        draw_stack_interval = setInterval(async () => {
             if (check_connection() && canvas_sync) {
-                draw_stack = canvas_sync.get_rest_of_draw_stack()
-                if (draw_stack.size() > 0) {
-                    let serialized_stack = []
-                    for (let i = 0; i < draw_stack.size(); ++i) {
-                        let cmd = draw_stack.get(i)
-                        serialized_stack.push({
-                            startX: cmd.startX,
-                            startY: cmd.startY,
-                            endX: cmd.endX,
-                            endY: cmd.endY,
-                            type: cmd.type
-                        })
+                try {
+                    let draw_stack = await canvas_sync.get_rest_of_draw_stack()
+                    if (draw_stack && draw_stack.size() > 0) {
+                        let serialized_stack = []
+                        for (let i = 0; i < draw_stack.size(); ++i) {
+                            let cmd = draw_stack.get(i)
+                            serialized_stack.push({
+                                startX: cmd.startX,
+                                startY: cmd.startY,
+                                endX: cmd.endX,
+                                endY: cmd.endY,
+                                type: cmd.type
+                            })
+                        }
+                        websocket.send(JSON.stringify(serialized_stack))
                     }
-                    websocket.send(JSON.stringify(serialized_stack))
+                } catch (err) {
+                    console.error("error getting or processing draw stack", err)
                 }
             }
         }, 500);
-        
+
     }
 
     websocket.onclose = () => {
