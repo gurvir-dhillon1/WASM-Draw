@@ -320,7 +320,6 @@ void game_loop(void* arg) {
                 break;
             case SDL_MOUSEBUTTONDOWN:
                 if (event.button.button == SDL_BUTTON_LEFT) {
-                    std::cout << "mouse pressed down" << std::endl;
                     state->mousePressed = true;
                     state->lastMouseX = event.motion.x;
                     state->lastMouseY = event.motion.y;
@@ -328,7 +327,6 @@ void game_loop(void* arg) {
                 break;
             case SDL_MOUSEBUTTONUP:
                 if (event.button.button == SDL_BUTTON_LEFT) {
-                    std::cout << "mouse released" << std::endl;
                     state->mousePressed = false;
                     if (state->lineMode) {
                         draw_line(state->lastMouseX, state->lastMouseY, event.motion.x, event.motion.y, LINE, true);

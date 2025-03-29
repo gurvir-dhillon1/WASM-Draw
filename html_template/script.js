@@ -89,7 +89,6 @@ const testCanvasSync = (canvas_sync) => {
 }
 
 document.getElementById("canvas").addEventListener("mouseup", () => {
-    console.log("mouse up")
     setTimeout(() => {
         const lineMode = Module.ccall("get_line_mode", "number", [])
         const circleMode = Module.ccall("get_circle_mode", "number", [])

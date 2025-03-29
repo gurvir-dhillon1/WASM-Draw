@@ -111,8 +111,21 @@ func serialize_points(w http.ResponseWriter, r *http.Request) {
             log.Println("Marshal: ", err)
             return
         }
-        log.Println("-------------------------------------------")
-        log.Println(string(broadcast_data))
+        //log.Println("-------------------------------------------")
+        //log.Println(string(broadcast_data))
+
+        for client := range clients {
+            if client != conn {
+                err = client.WriteMessage(message_type, broadcast_data)
+                if err != nil {
+                    log.Println("WriteMessage: ", err)
+                    client.Close()
+                    mu.Lock()
+                    delete(clients, client)
+                    mu.Unlock()
+                }
+            }
+        }
     }
 }
 
