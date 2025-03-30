@@ -29,6 +29,8 @@ jobs:
           -s EMBIND_STD_STRING_IS_UTF8=0 \
           -lembind \
           --shell-file html_template/template.html -o index.html
+
+          ls -la
         env:
           WEBSOCKET_URL: ${{ secrets.WEBSOCKET_URL }}
       - name: Deploy to GitHub Pages
