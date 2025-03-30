@@ -123,7 +123,7 @@ extern "C" {
 
     EMSCRIPTEN_KEEPALIVE
     void resize_renderer(int width, int height) {
-//        std::cout << "Resizing to: " << width << "x" << height << std::endl;
+        std::cout << "Resizing to: " << width << "x" << height << std::endl;
         SDL_Texture* oldTexture = gameState.drawingTexture;
         int oldWidth, oldHeight;
         SDL_QueryTexture(oldTexture, NULL, NULL, &oldWidth, &oldHeight);
