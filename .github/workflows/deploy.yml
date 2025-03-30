@@ -8,9 +8,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Delete old stuff
-        run: |
-          make clean
         
       - name: Install SDL2 development libraries
         run: |
