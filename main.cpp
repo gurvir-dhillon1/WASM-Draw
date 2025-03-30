@@ -113,6 +113,7 @@ GameState gameState;
 extern "C" {
     EMSCRIPTEN_KEEPALIVE
     void draw_line(int startX, int startY, int endX, int endY, int type, bool add_to_stack) {
+        std::cout << "drawing line: " << startX << " " << startY << " " << endX << " " << endY << std::endl;
         SDL_SetRenderTarget(gameState.renderer, gameState.drawingTexture);
         SDL_SetRenderDrawColor(gameState.renderer, 255, 255, 255, 255);
         SDL_RenderDrawLine(gameState.renderer, startX, startY, endX, endY);
