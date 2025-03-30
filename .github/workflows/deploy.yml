@@ -1,15 +1,19 @@
 name: Deploy WASM to GitHub Pages
-
 on:
   push:
     branches: [main]
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        
+      - name: Install SDL2 development libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsdl2-dev
+        
       - name: Install Emscripten
         run: |
           git clone https://github.com/emscripten-core/emsdk.git
@@ -18,19 +22,23 @@ jobs:
           ./emsdk activate latest
           source ./emsdk_env.sh
           echo "EMSDK_ENV activated"
+          
       - name: Build WASM
         run: |
           source emsdk/emsdk_env.sh
+          # Create html_template directory if it doesn't exist
+          mkdir -p html_template
+          # Copy template files to html_template directory
+          cp template.html html_template/
+          cp script.js html_template/
+          cp websockets.js html_template/
           # build wasm
           emcc main.cpp -s WASM=1 -s USE_SDL=2 -O3 -s ASYNCIFY -s \
           NO_EXIT_RUNTIME=1 -s EXPORTED_RUNTIME_METHODS=['ccall'] \
           -s EMBIND_STD_STRING_IS_UTF8=0 \
           -lembind \
           --shell-file html_template/template.html -o index.html
-
-          ls -la
-        env:
-          WEBSOCKET_URL: ${{ secrets.WEBSOCKET_URL }}
+          
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
