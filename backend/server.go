@@ -5,7 +5,7 @@ import (
     "encoding/json"
     "net/http"
     "log"
-    "flag"
+    "os"
     "sync"
 )
 
@@ -24,7 +24,6 @@ type DrawCommand struct {
     Type   int      `json:"type"`
 }
 
-var address = flag.String("addr", "localhost:3000", "http service address")
 var mu sync.Mutex
 var upgrader = websocket.Upgrader{
     CheckOrigin: func(r *http.Request) bool {
@@ -130,11 +129,18 @@ func serialize_points(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-    flag.Parse()
+    port := os.Getenv("PORT")
+    host := os.Getenv("HOST")
+    if (port == "" || host == "") {
+        log.Println("host or port env variables not defined")
+        return
+    }
+
+    address = host + ":" + port
     log.SetFlags(0)
     http.HandleFunc("/ws", serialize_points)
 
-    log.Printf("server started at %v", *address)
+    log.Printf("server started at %v", address)
 
     err := http.ListenAndServe(*address, nil)
     if err != nil {
