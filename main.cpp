@@ -6,6 +6,89 @@
 #include <emscripten/html5.h>
 #endif
 
+enum Draw_Modes {
+    FREE,
+    LINE,   // disabled for now until regular drawing is working with websockets
+    CIRCLE, // disabled for now until lines are working with websockets
+    RECT    // not yet implemented
+};
+
+struct DrawCommand {
+    int startX, startY, endX, endY, type;
+};
+
+// declare function here since we use it in CanvasSync class
+extern "C" void draw_line(int startX, int startY, int endX, int endY, int type, bool add_to_stack);
+
+class CanvasSync {
+    private:
+        std::vector<DrawCommand> drawStack;
+        int drawStackPtr = 0;
+    public:
+        void add_draw_command(int startX, int startY, int endX, int endY, int type) {
+            drawStack.push_back({startX, startY, endX, endY, type});
+        }
+
+        std::vector<DrawCommand> get_full_draw_stack(){
+            return drawStack;
+        }
+
+        std::vector<DrawCommand> get_rest_of_draw_stack() {
+            int n = drawStackPtr;
+            drawStackPtr = drawStack.size();
+            return std::vector<DrawCommand>(drawStack.begin() + n, drawStack.end());
+        }
+        
+        void clear_draw_stack() {
+            drawStack.clear();
+            drawStackPtr = 0;
+        }
+
+        void sync_draw_stack() {
+            for (int i = drawStackPtr; i < drawStack.size(); ++i) {
+                DrawCommand cmd = drawStack[i];
+                if (cmd.type == FREE) {
+                    draw_line(cmd.startX, cmd.startY, cmd.endX, cmd.endY, cmd.type, false);
+                }
+            }
+        }
+
+        void replay_draw_stack() {
+            for (const auto& cmd : drawStack) {
+                if (cmd.type == FREE) {
+                    draw_line(cmd.startX, cmd.startY, cmd.endX, cmd.endY, cmd.type, false);
+                }
+                // add logic for line, circle, and rect later
+            }
+            drawStackPtr = drawStack.size();
+        }
+};
+
+CanvasSync canvasSync;
+
+CanvasSync* getCanvasSyncInstance() {
+    return &canvasSync;
+}
+
+EMSCRIPTEN_BINDINGS(canvas_sync_module) {
+    emscripten::register_vector<DrawCommand>("vector<DrawCommand>");
+    emscripten::class_<DrawCommand>("DrawCommand")
+        .property("startX", &DrawCommand::startX)
+        .property("startY", &DrawCommand::startY)
+        .property("endX", &DrawCommand::endX)
+        .property("endY", &DrawCommand::endY)
+        .property("type", &DrawCommand::type);
+    emscripten::class_<CanvasSync>("CanvasSync")
+        .constructor()
+        .function("add_draw_command", &CanvasSync::add_draw_command)
+        .function("get_full_draw_stack", &CanvasSync::get_full_draw_stack)
+        .function("get_rest_of_draw_stack", &CanvasSync::get_rest_of_draw_stack)
+        .function("clear_draw_stack", &CanvasSync::clear_draw_stack)
+        .function("sync_draw_stack", &CanvasSync::sync_draw_stack)
+        .function("replay_draw_stack", &CanvasSync::replay_draw_stack);
+    emscripten::function("getCanvasSync", &getCanvasSyncInstance, emscripten::allow_raw_pointers());
+}
+
 struct GameState {
     bool running;
     SDL_Window* window = nullptr;
@@ -28,6 +111,16 @@ struct GameState {
 GameState gameState;
 
 extern "C" {
+    EMSCRIPTEN_KEEPALIVE
+    void draw_line(int startX, int startY, int endX, int endY, int type, bool add_to_stack) {
+        SDL_SetRenderTarget(gameState.renderer, gameState.drawingTexture);
+        SDL_SetRenderDrawColor(gameState.renderer, 255, 255, 255, 255);
+        SDL_RenderDrawLine(gameState.renderer, startX, startY, endX, endY);
+        SDL_SetRenderTarget(gameState.renderer, NULL);
+        if (add_to_stack)
+            canvasSync.add_draw_command(startX, startY, endX, endY, type);
+    }
+
     EMSCRIPTEN_KEEPALIVE
     void resize_renderer(int width, int height) {
 //        std::cout << "Resizing to: " << width << "x" << height << std::endl;
@@ -67,6 +160,7 @@ extern "C" {
         SDL_SetRenderDrawColor(gameState.renderer, 0, 0, 0, 255);
         SDL_RenderClear(gameState.renderer);
         SDL_SetRenderTarget(gameState.renderer, NULL);
+        canvasSync.clear_draw_stack();
     }
 
     EMSCRIPTEN_KEEPALIVE
@@ -107,6 +201,17 @@ extern "C" {
     int get_square_mode() {
         return gameState.squareMode;
     }
+
+    EMSCRIPTEN_KEEPALIVE
+    int get_last_mouse_x() {
+        return gameState.lastMouseX;
+    }
+
+    EMSCRIPTEN_KEEPALIVE
+    int get_last_mouse_y() {
+        return gameState.lastMouseY;
+    }
+
 }
 
 // midpoint circle algorithm
@@ -172,7 +277,6 @@ void game_loop(void* arg) {
     GameState* state = static_cast<GameState*>(arg);
     SDL_Event event;
 
-
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
             case SDL_MOUSEMOTION:
@@ -206,26 +310,8 @@ void game_loop(void* arg) {
                         draw_circle(state->renderer, centerX, centerY, radius);
 
                         SDL_RenderPresent(state->renderer);
-                    } else if (state->squareMode) {
-
-                        std::cout << "Square mode is active during motion" << std::endl;
-                        SDL_SetRenderTarget(state->renderer, NULL);
-                        SDL_SetRenderDrawColor(state->renderer, 0, 0, 0, 255);
-                        SDL_RenderClear(state->renderer);
-
-                        SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
-
-                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
-                        
-                        draw_square(state->renderer, state->lastMouseX, state->lastMouseY, event.motion.x, event.motion.y);
-
-                        SDL_RenderPresent(state->renderer);
                     } else {
-                        SDL_SetRenderTarget(state->renderer, state->drawingTexture);
-                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
-                        SDL_RenderDrawLine(state->renderer, state->lastMouseX,
-                                state->lastMouseY, event.motion.x, event.motion.y);
-                        SDL_SetRenderTarget(state->renderer, NULL);
+                        draw_line(state->lastMouseX, state->lastMouseY, event.motion.x, event.motion.y, FREE, true);
 
                         state->lastMouseX = event.motion.x;
                         state->lastMouseY = event.motion.y;
@@ -234,7 +320,6 @@ void game_loop(void* arg) {
                 break;
             case SDL_MOUSEBUTTONDOWN:
                 if (event.button.button == SDL_BUTTON_LEFT) {
-                    std::cout << "mouse pressed down" << std::endl;
                     state->mousePressed = true;
                     state->lastMouseX = event.motion.x;
                     state->lastMouseY = event.motion.y;
@@ -242,20 +327,9 @@ void game_loop(void* arg) {
                 break;
             case SDL_MOUSEBUTTONUP:
                 if (event.button.button == SDL_BUTTON_LEFT) {
-                    std::cout << "mouse released" << std::endl;
                     state->mousePressed = false;
                     if (state->lineMode) {
-                        SDL_SetRenderTarget(state->renderer, state->drawingTexture);
-                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
-                        SDL_RenderDrawLine(state->renderer, state->lastMouseX, state->lastMouseY,
-                                event.motion.x, event.motion.y);
-
-                        SDL_SetRenderTarget(state->renderer, NULL);
-                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
-                        SDL_RenderClear(state->renderer);
-                        SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
-                        SDL_RenderPresent(state->renderer);
-
+                        draw_line(state->lastMouseX, state->lastMouseY, event.motion.x, event.motion.y, LINE, true);
                         state->lineMode = 0;
                     } else if (state->circleMode) {
                         SDL_SetRenderTarget(state->renderer, state->drawingTexture);
@@ -265,21 +339,12 @@ void game_loop(void* arg) {
                         int radius = sqrt(pow(event.motion.x - centerX, 2) + pow(event.motion.y - centerY, 2));
                         draw_circle(state->renderer, centerX, centerY, radius);
                         SDL_SetRenderTarget(state->renderer, NULL);
-                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
-                        SDL_RenderClear(state->renderer);
-                        SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
-                        SDL_RenderPresent(state->renderer);
                         state->circleMode = 0;
                     } else if (state->squareMode) {
                         SDL_SetRenderTarget(state->renderer, state->drawingTexture);
                         SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
                         draw_square(state->renderer, state->lastMouseX, state->lastMouseY, event.motion.x, event.motion.y);
                         SDL_SetRenderTarget(state->renderer, NULL);
-                        SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
-                        SDL_RenderClear(state->renderer);
-                        SDL_RenderCopy(state->renderer, state->drawingTexture, NULL, NULL);
-                        SDL_RenderPresent(state->renderer);
-                        state->squareMode = 0;
                     }
                 }
                 break;
@@ -328,7 +393,7 @@ int main() {
     SDL_RenderClear(gameState.renderer);
     SDL_SetRenderTarget(gameState.renderer, NULL);
 
-    SDL_SetWindowTitle(gameState.window, "web game");
+    SDL_SetWindowTitle(gameState.window, "wasm draw");
 
 
 #ifdef __EMSCRIPTEN__
