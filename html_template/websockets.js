@@ -8,9 +8,7 @@ const open_connection = () => {
         console.log("websocket is already open")
         return
     }
-    const default_url = "wss://localhost:3000/ws"
-    const websocket_url = typeof window !== "undefined" && window.WEBSOCKET_URL ? 
-        window.WEBSOCKET_URL : default_url
+    const websocket_url = "wss://localhost:3000/ws"
 
     websocket = new WebSocket(websocket_url)
 
