@@ -7,6 +7,7 @@ import (
     "log"
     "os"
     "sync"
+    "github.com/joho/godotenv"
 )
 
 const (
@@ -129,20 +130,23 @@ func serialize_points(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+    log.SetFlags(0)
+    err := godotenv.Load()
+    if err != nil {
+        log.Fatal("failed to load env files")
+    }
     port := os.Getenv("PORT")
     host := os.Getenv("HOST")
     if (port == "" || host == "") {
-        log.Println("host or port env variables not defined")
-        return
+        log.Fatal("host or port env variables not defined")
     }
 
-    address = host + ":" + port
-    log.SetFlags(0)
+    address := host + ":" + port
     http.HandleFunc("/ws", serialize_points)
 
     log.Printf("server started at %v", address)
 
-    err := http.ListenAndServe(*address, nil)
+    err = http.ListenAndServe(address, nil)
     if err != nil {
         log.Fatal("ListenAndServe: ", err)
     }
