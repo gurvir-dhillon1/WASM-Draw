@@ -133,7 +133,7 @@ func main() {
     log.SetFlags(0)
     err := godotenv.Load()
     if err != nil {
-        log.Fatal("failed to load env files")
+        log.Fatal("failed to load env files", err)
     }
     port := os.Getenv("PORT")
     host := os.Getenv("HOST")
