@@ -8,7 +8,8 @@ const open_connection = () => {
         console.log("websocket is already open")
         return
     }
-    const websocket_url = "wss://localhost:3000/ws"
+    const default_url = "wss://localhost:3000/ws"
+    const websocket_url = "wss://wasm-draw.onrender.com/ws"
 
     websocket = new WebSocket(websocket_url)
 
