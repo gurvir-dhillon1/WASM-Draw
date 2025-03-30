@@ -26,12 +26,6 @@ jobs:
       - name: Build WASM
         run: |
           source emsdk/emsdk_env.sh
-          # Create html_template directory if it doesn't exist
-          mkdir -p html_template
-          # Copy template files to html_template directory
-          cp template.html html_template/
-          cp script.js html_template/
-          cp websockets.js html_template/
           # build wasm
           emcc main.cpp -s WASM=1 -s USE_SDL=2 -O3 -s ASYNCIFY -s \
           NO_EXIT_RUNTIME=1 -s EXPORTED_RUNTIME_METHODS=['ccall'] \
