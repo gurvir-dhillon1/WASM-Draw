@@ -101,3 +101,22 @@ document.getElementById("canvas").addEventListener("mouseup", () => {
 })
 
 window.addEventListener("resize", resizeCanvas)
+
+const change_button_text = (button_id, button_text) => {
+    const join_button = document.getElementById(button_id)
+    join_button.disabled = false
+    join_button.textContent = button_text
+}
+
+document.getElementById("join-room").addEventListener("click", () => {
+    const join_button = document.getElementById("join-room")
+    if (check_connection()) {
+        join_button.textContent = "leaving..."
+        join_button.disabled = true
+        close_connection()
+    } else {
+        join_button.textContent = "joining..."
+        join_button.disabled = true
+        open_connection()
+    }
+})

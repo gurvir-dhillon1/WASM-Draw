@@ -15,11 +15,11 @@ const open_connection = () => {
 
     websocket.onopen = () => {
         console.log("websocket connection established")
-        change_join_room_button("leave room", "join-room")
+        change_button_text("join-room", "leave room")
         const processDrawStack = async () => {
             if (check_connection() && canvas_sync) {
                 try {
-                    let draw_stack = canvas_sync.get_rest_of_draw_stack()
+                    let draw_stack = await canvas_sync.get_rest_of_draw_stack()
                     // if we fail to get the next iteration, just get the entire draw stack
                     // and redraw EVERYTHING, don't worry about performance idk what that is :P
                     if (!draw_stack) {
@@ -41,16 +41,16 @@ const open_connection = () => {
                     console.error("error getting or processing draw stack", err)
                 }
             }
-            draw_stack_interval = setTimeout(processDrawStack, 100);
+            draw_stack_interval = setTimeout(processDrawStack, 500);
         }
         processDrawStack()
     }
 
     websocket.onclose = () => {
         console.log("websocket connection closed")
+        change_button_text("join-room", "join room")
         clearTimeout(draw_stack_interval)
         draw_stack_interval = null
-        change_join_room_button("join room", "join-room")
     }
 
     websocket.onerror = (error) => {
@@ -71,8 +71,8 @@ const open_connection = () => {
                 Module.ccall(
                     "draw_line",
                     null,
-                    ["number", "number", "number", "number", "number", "boolean"],
-                    [startX, startY, endX, endY, type, false]
+                    ["number", "number", "number", "number", "number"],
+                    [startX, startY, endX, endY, false]
                 )
             }
         }
@@ -102,23 +102,4 @@ const send_message = (payload = "hello") => {
         console.error(`websocket is not open, message "${payload}" not sent`)
     }
 }
-
-const change_join_room_button = (button_text, button_id) => {
-    const join_button = document.getElementById(button_id)
-    join_button.disabled = false
-    join_button.textContent = button_text
-}
-
-document.getElementById("join-room").addEventListener("click", () => {
-    const join_button = document.getElementById("join-room")
-    if (check_connection()) {
-        join_button.textContent = "leaving..."
-        join_button.disabled = true
-        close_connection()
-    } else {
-        join_button.textContent = "joining..."
-        join_button.disabled = true
-        open_connection()
-    }
-})
 
