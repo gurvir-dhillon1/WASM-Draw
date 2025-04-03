@@ -88,6 +88,49 @@ const testCanvasSync = (canvas_sync) => {
     }
 }
 
+const processDrawCommands = () => {
+    const newCmdCount = Module.ccall(
+        "get_new_command_count",
+        "number",
+        []
+    )
+
+    if (newCmdCount <= 0) return []
+
+    const totalCmdCount = Module.ccall(
+        "get_draw_command_count",
+        "number",
+        []
+    )
+
+    const startXPtr = Module.ccall( "get_start_x_array", "number", [])
+    const startYPtr = Module.ccall( "get_start_y_array", "number", [])
+    const endXPtr = Module.ccall( "get_end_x_array", "number", [])
+    const endYPtr = Module.ccall( "get_end_y_array", "number", [])
+    const typePtr = Module.ccall("get_draw_types", "number", [])
+
+    const startXArr = new Int32Array(Module.HEAP32.buffer, startXPtr, totalCmdCount)
+    const startYArr = new Int32Array(Module.HEAP32.buffer, startYPtr, totalCmdCount)
+    const endXArr = new Int32Array(Module.HEAP32.buffer, endXPtr, totalCmdCount)
+    const endYArr = new Int32Array(Module.HEAP32.buffer, endYPtr, totalCmdCount)
+    const typeArr = new Int32Array(Module.HEAP32.buffer, typePtr, totalCmdCount)
+
+    const cmds = []
+    for (let i = totalCmdCount - newCmdCount; i < totalCmdCount; ++i) {
+        cmds.push({
+            startX: startXArr[i],
+            startY: startYArr[i],
+            endX: endXArr[i],
+            endY: endYArr[i],
+            type: typeArr[i]
+        })
+    }
+
+    Module.ccall("mark_commands_sent", null, [])
+
+    return cmds
+}
+
 document.getElementById("canvas").addEventListener("mouseup", () => {
     setTimeout(() => {
         const lineMode = Module.ccall("get_line_mode", "number", [])
