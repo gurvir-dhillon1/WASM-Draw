@@ -15,6 +15,7 @@ const open_connection = () => {
 
     websocket.onopen = () => {
         console.log("websocket connection established")
+        change_button_text("join-room", "leave room")
         const processDrawStack = async () => {
             if (check_connection() && canvas_sync) {
                 try {
@@ -47,6 +48,7 @@ const open_connection = () => {
 
     websocket.onclose = () => {
         console.log("websocket connection closed")
+        change_button_text("join-room", "join room")
         clearTimeout(draw_stack_interval)
         draw_stack_interval = null
     }
@@ -100,15 +102,4 @@ const send_message = (payload = "hello") => {
         console.error(`websocket is not open, message "${payload}" not sent`)
     }
 }
-
-document.getElementById("join-room").addEventListener("click", () => {
-    const join_button = document.getElementById("join-room")
-    if (check_connection()) {
-        join_button.textContent = "join room"
-        close_connection()
-    } else {
-        join_button.textContent = "leave room"
-        open_connection()
-    }
-})
 
