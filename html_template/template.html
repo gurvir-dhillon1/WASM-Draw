@@ -5,97 +5,47 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>wasm draw</title>
     <link rel="icon" href="kittydraw.png" type="image/png">
-    <style>
-/*
-        body, button, canvas {
-            cursor: url("mouse.png"), auto !important;
-        }
-*/
-        body {
-            margin: 0;
-            width: 100vw;
-            height: 100vh;
-            font-family: monospace;
-            background-color: black;
-        }
-        canvas {
-            border: none;
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-        .menu-bar {
-            position: absolute;
-            top: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.9);
-            z-index: 1000;
-            border-bottom: 2px solid black;
-        }
-
-        .draw-options {
-            display: flex;
-            gap: 10px;
-            padding: 10px;
-        }
-        .title {
-            padding: 10px;
-        }
-
-        .active {
-            background-color: grey;
-            color: white;
-        }
-    </style>
+    <link rel="stylesheet" href="html_template/styles.css">
 </head>
 <body>
-    <div style="width:100%">
-        <div id="menu-bar" class="menu-bar">
-            <div class="title">
-                <h3>wasm draw</h3>
-            </div>
-            <div class="draw-options">
-                <button
-                    id="line-mode-button"
-                    onclick="onLineClick()"
-                    disabled
-                >
-                    line
-                </button>
-                <button
-                    id="circle-mode-button"
-                    onclick="onCircleClick()"
-                    disabled
-                >
-                    circle
-                </button>
-                <button
-                    id="square-mode-button"
-                    onclick="onSquareClick()"
-                    disabled
-                >
-                    square
-                </button>
-                <button 
-                    id="clear-canvas" 
-                    onclick="Module.ccall('clear_canvas', null, [])"
-                >
-                    clear canvas
-                </button>
-            </div>
-            <button
-                id="join-room"
-            >
-                join room
-            </button>
-        </div>
-        <div id="game-container">
-            <canvas id="canvas"></canvas>
-        </div>
-        <div id="output"></div>
+    <div class="title">
+        <h3>wasm draw</h3>
+    </div>
+    <div class="buttons-container">
+        <!--
+        <button
+            id="line-mode-button"
+            onclick="onLineClick()"
+        >
+            line
+        </button>
+        <button
+            id="circle-mode-button"
+            onclick="onCircleClick()"
+        >
+            circle
+        </button>
+        <button
+            id="square-mode-button"
+            onclick="onSquareClick()"
+        >
+            square
+        </button>
+        -->
+        <button 
+            id="clear-canvas" 
+            onclick="Module.ccall('clear_canvas', null, [])"
+        >
+            clear canvas
+        </button>
+        <button
+            id="join-room"
+        >
+            join room
+        </button>
+    </div>
+    <div id="game-container">
+        <canvas id="canvas"></canvas>
     </div>
     <script type="text/javascript" src="html_template/script.js"></script>
     <script type="text/javascript" src="html_template/websockets.js"></script>
