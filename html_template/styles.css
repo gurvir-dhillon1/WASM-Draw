@@ -1,0 +1,43 @@
+/*
+body, button, canvas {
+    cursor: url("mouse.png"), auto !important;
+}
+*/
+body {
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+    font-family: monospace;
+    background-color: black;
+}
+canvas {
+    border: none;
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+.menu-bar {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.9);
+    z-index: 1000;
+    border-bottom: 2px solid black;
+}
+
+.draw-options {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+}
+.title {
+    padding: 10px;
+}
+
+.active {
+    background-color: grey;
+    color: white;
+}
