@@ -27,6 +27,18 @@ canvas {
     gap: 10px;
     padding: 10px;
 }
+
+button {
+    padding: 10px;
+    border-radius: 999px;
+    border: none;
+}
+
+.size-1 {
+    width: 24px;
+    height: 24px;
+}
+
 .title {
     position: absolute;
     top: 0;
