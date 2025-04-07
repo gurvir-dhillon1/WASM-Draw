@@ -15,7 +15,7 @@ const open_connection = () => {
 
     websocket.onopen = () => {
         console.log("websocket connection established")
-        change_button_text("join-room", "leave room")
+        change_join_button("join-room", "leave room", true)
         const processDrawStack = async () => {
             if (check_connection()) {
                 try {
@@ -32,7 +32,7 @@ const open_connection = () => {
 
     websocket.onclose = () => {
         console.log("websocket connection closed")
-        change_button_text("join-room", "join room")
+        change_join_button("join-room", "join room", false)
         clearTimeout(draw_stack_interval)
         draw_stack_interval = null
     }
