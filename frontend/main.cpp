@@ -110,7 +110,7 @@ extern "C" {
 
         gameState.drawingTexture = SDL_CreateTexture(
             gameState.renderer,
-            SDL_PIXELFORMAT_RGBA8888,
+            SDL_PIXELFORMAT_ABGR8888,
             SDL_TEXTUREACCESS_TARGET,
             width,
             height
