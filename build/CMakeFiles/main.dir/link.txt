@@ -1,1 +1,0 @@
-/Users/gurvirdhillon/emsdk/upstream/emscripten/em++ -sWASM=1 -sUSE_SDL=2 -O3 -sASYNCIFY -sNO_EXIT_RUNTIME=1 "-sEXPORTED_RUNTIME_METHODS=['ccall']" -sEMBIND_STD_STRING_IS_UTF8=0 -lembind --shell-file /Users/gurvirdhillon/Documents/WASM-Draw/html_template/template.html @CMakeFiles/main.dir/objects1.rsp -o /Users/gurvirdhillon/Documents/WASM-Draw/index.html

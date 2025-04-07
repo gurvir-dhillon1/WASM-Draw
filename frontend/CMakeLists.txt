@@ -13,6 +13,9 @@ if(NOT CMAKE_TOOLCHAIN_FILE)
     message(FATAL_ERROR "This project requires Emscripten. Please use 'emcmake cmake' to configure.")
 endif()
 
+# Add SDL compiler flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s USE_SDL=2")
+
 # Define the executable target
 add_executable(main main.cpp)
 
