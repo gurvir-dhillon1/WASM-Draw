@@ -134,11 +134,9 @@ const change_join_button = (button_id, joined=true) => {
 document.getElementById("join-room").addEventListener("click", () => {
     const join_button = document.getElementById("join-room")
     if (check_connection()) {
-        join_button.textContent = "leaving..."
         join_button.disabled = true
         close_connection()
     } else {
-        join_button.textContent = "joining..."
         join_button.disabled = true
         open_connection()
     }
