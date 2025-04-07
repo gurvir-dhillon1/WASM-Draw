@@ -1,0 +1,4 @@
+/Users/gurvirdhillon/Documents/WASM-Draw/build/CMakeFiles/main.dir
+/Users/gurvirdhillon/Documents/WASM-Draw/build/CMakeFiles/clean-custom.dir
+/Users/gurvirdhillon/Documents/WASM-Draw/build/CMakeFiles/edit_cache.dir
+/Users/gurvirdhillon/Documents/WASM-Draw/build/CMakeFiles/rebuild_cache.dir
