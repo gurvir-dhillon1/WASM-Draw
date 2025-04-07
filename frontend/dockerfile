@@ -14,6 +14,6 @@ RUN emcmake cmake -S . -B build
 
 RUN cmake --build build
 
-EXPOSE 8080
+EXPOSE 8000
 
 CMD ["python3", "-m", "http.server"]
