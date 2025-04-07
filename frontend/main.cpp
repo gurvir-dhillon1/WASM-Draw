@@ -103,7 +103,7 @@ extern "C" {
 
     EMSCRIPTEN_KEEPALIVE
     void resize_renderer(int width, int height) {
-//        std::cout << "Resizing to: " << width << "x" << height << std::endl;
+        std::cout << "Resizing to: " << width << "x" << height << std::endl;
         SDL_Texture* oldTexture = gameState.drawingTexture;
         int oldWidth, oldHeight;
         SDL_QueryTexture(oldTexture, NULL, NULL, &oldWidth, &oldHeight);
@@ -349,7 +349,11 @@ void emscripten_loop(void* arg) {
 #endif
 
 int main() {
-    SDL_Init(SDL_INIT_VIDEO);
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        std::cerr << "failed to init SDL_INIT_VIDEO" << std::endl;
+        return 1;
+    }
+    std::cout << "successfully inited SDL_INIT_VIDEO" << std::endl;
     gameState.running = true;
     int width = EM_ASM_INT({ return window.innerWidth });
     int height = EM_ASM_INT({ return window.innerHeight });
@@ -362,11 +366,16 @@ int main() {
 
     gameState.drawingTexture = SDL_CreateTexture(
         gameState.renderer,
-        SDL_PIXELFORMAT_RGBA8888,
+        SDL_PIXELFORMAT_ABGR8888,
         SDL_TEXTUREACCESS_TARGET,
         width,
         height
     );
+
+    if (!gameState.drawingTexture) {
+        std::cout << "failed to init gamestate drawingTexture " << SDL_GetError() << std:: endl;
+        return 1;
+    }
 
     SDL_SetRenderTarget(gameState.renderer, gameState.drawingTexture);
     SDL_SetRenderDrawColor(gameState.renderer, 0, 0, 0, 255);
