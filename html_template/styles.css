@@ -43,6 +43,14 @@ button#join-room {
     background-color: green;
 }
 
+#join-room.not-joined .icon-joined {
+    display: none;
+}
+
+#join-room.joined .icon-not-joined {
+    display: none;
+}
+
 .size-1 {
     width: 24px;
     height: 24px;
