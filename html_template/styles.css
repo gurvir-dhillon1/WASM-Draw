@@ -28,10 +28,19 @@ canvas {
     padding: 10px;
 }
 
-button {
-    padding: 10px;
+button#clear-canvas,
+button#join-room {
+    width: 50px;
+    height: 50px;
     border-radius: 999px;
     border: none;
+}
+.joined {
+    background-color: red;
+}
+
+.not-joined {
+    background-color: green;
 }
 
 .size-1 {
