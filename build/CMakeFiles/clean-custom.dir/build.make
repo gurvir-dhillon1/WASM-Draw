@@ -67,8 +67,9 @@ include CMakeFiles/clean-custom.dir/compiler_depend.make
 include CMakeFiles/clean-custom.dir/progress.make
 
 CMakeFiles/clean-custom:
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir=/Users/gurvirdhillon/Documents/WASM-Draw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Cleaning build files in html_template/"
-	cd /Users/gurvirdhillon/Documents/WASM-Draw && /usr/local/bin/cmake -E remove /Users/gurvirdhillon/Documents/WASM-Draw/html_template/index.js /Users/gurvirdhillon/Documents/WASM-Draw/html_template/index.wasm /Users/gurvirdhillon/Documents/WASM-Draw/html_template/index.html
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir=/Users/gurvirdhillon/Documents/WASM-Draw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Cleaning build files"
+	cd /Users/gurvirdhillon/Documents/WASM-Draw && /usr/local/bin/cmake -E remove /Users/gurvirdhillon/Documents/WASM-Draw/index.js /Users/gurvirdhillon/Documents/WASM-Draw/index.wasm /Users/gurvirdhillon/Documents/WASM-Draw/index.html
+	cd /Users/gurvirdhillon/Documents/WASM-Draw && /usr/local/bin/cmake -E remove_directory /Users/gurvirdhillon/Documents/WASM-Draw/build
 
 clean-custom: CMakeFiles/clean-custom
 clean-custom: CMakeFiles/clean-custom.dir/build.make

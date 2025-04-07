@@ -40,12 +40,13 @@ set_target_properties(main PROPERTIES
     SUFFIX ".html"              # Ensure the output is index.html
 )
 
-# Optional: Add a custom clean target (CMake's default 'clean' usually suffices)
+# Add a custom clean target (CMake's default 'clean' usually suffices)
 add_custom_target(clean-custom
     COMMAND ${CMAKE_COMMAND} -E remove
-        ${CMAKE_SOURCE_DIR}/html_template/index.js
-        ${CMAKE_SOURCE_DIR}/html_template/index.wasm
-        ${CMAKE_SOURCE_DIR}/html_template/index.html
+        ${CMAKE_SOURCE_DIR}/index.js
+        ${CMAKE_SOURCE_DIR}/index.wasm
+        ${CMAKE_SOURCE_DIR}/index.html
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    COMMENT "Cleaning build files in html_template/"
+    COMMENT "Cleaning build files"
 )
