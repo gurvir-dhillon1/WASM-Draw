@@ -27,6 +27,35 @@ canvas {
     gap: 10px;
     padding: 10px;
 }
+
+button#clear-canvas,
+button#join-room {
+    width: 50px;
+    height: 50px;
+    border-radius: 999px;
+    border: none;
+}
+.joined {
+    background-color: red;
+}
+
+.not-joined {
+    background-color: green;
+}
+
+#join-room.not-joined .icon-joined {
+    display: none;
+}
+
+#join-room.joined .icon-not-joined {
+    display: none;
+}
+
+.size-1 {
+    width: 24px;
+    height: 24px;
+}
+
 .title {
     position: absolute;
     top: 0;
