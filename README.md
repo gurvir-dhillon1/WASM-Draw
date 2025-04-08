@@ -77,7 +77,3 @@ Once the server is up and running, you can access the drawing tool directly in y
 
 - If the webpage isn’t loading or you encounter issues, double-check that the environment is set up correctly and that the WASM-Draw project is compiled properly.
 - If the page isn't rendering or functioning as expected, inspect the browser console for errors.
-
----
-
-Let me know if you'd like to adjust anything further!
