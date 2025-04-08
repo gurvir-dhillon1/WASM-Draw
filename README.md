@@ -1,6 +1,6 @@
 # WebAssembly-Drawing-Tool
 
-This is a C++ drawing tool developed to be used in the browser using WebAssembly. If you want to host it locally, please follow the instructions below. Otherwise, feel free to check it out [here](https://gdhillon2.github.io/WASM-Draw/).
+This is a C++ drawing tool developed to be used in the browser using WebAssembly. If you want to host it locally, please follow the instructions below. Otherwise, feel free to check it out [here](https://wasm-draw.art/).
 
 # IMPORTANT
 The WebSocket server is hosted for free on Render, one downside is the server goes to sleep after 15 minutes of inactivity so the first attempt at joining the room will always fail if the server is asleep. Please allow at least 1 minute for the server to wake up after failing.
