@@ -8,13 +8,14 @@ const open_connection = () => {
         console.log("websocket is already open")
         return
     }
-    const default_url = "wss://localhost:3000/ws"
-    const websocket_url = "wss://wasm-draw.onrender.com/ws"
-
-    websocket = new WebSocket(websocket_url)
+    const is_production = window.location.hostname !== "localhost"
+    const default_url = "ws://localhost:8080/ws"
+    const prod_url = "wss://wasm-draw.onrender.com/ws"
+    const url = is_production ? prod_url : default_url
+    websocket = new WebSocket(url)
 
     websocket.onopen = () => {
-        console.log("websocket connection established")
+        console.log("websocket connection established", url)
         change_join_button("join-room", true)
         const processDrawStack = async () => {
             if (check_connection()) {
