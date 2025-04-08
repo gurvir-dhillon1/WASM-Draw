@@ -1,7 +1,3 @@
-Here's a reworded version of the instructions:
-
----
-
 # WebAssembly Drawing Tool
 
 This is a C++ drawing tool that runs in the browser using WebAssembly. To host it locally, follow the steps below. Alternatively, you can check it out [here](https://wasm-draw.art/).
