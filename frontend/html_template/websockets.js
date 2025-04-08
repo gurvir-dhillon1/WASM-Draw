@@ -10,7 +10,7 @@ const open_connection = () => {
     }
     const is_production = window.location.hostname !== "localhost"
     const default_url = "ws://localhost:8080/ws"
-    const prod_url = "wss://wasm-draw.onrender.com/ws"
+    const prod_url = "wss://wasm-draw.art/ws"
     const url = is_production ? prod_url : default_url
     websocket = new WebSocket(url)
 
