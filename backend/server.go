@@ -8,8 +8,11 @@ import (
     "os"
     "sync"
     "github.com/joho/godotenv"
+	"math/rand"
+	"time"
 )
 
+// Enums for the different drawing types
 const (
     FREE = iota
     LINE
@@ -17,6 +20,8 @@ const (
     RECT
 )
 
+// this struct helps us Unmarshal and Marshal the incoming JSON bytes
+// from the frontend
 type DrawCommand struct {
     StartX int      `json:"startX"`
     StartY int      `json:"startY"`
@@ -31,49 +36,41 @@ var upgrader = websocket.Upgrader{
         return true
     },
 }
-var clients = make(map[*websocket.Conn]bool)
 
-func echo(w http.ResponseWriter, r *http.Request) {
-    conn, err := upgrader.Upgrade(w, r, nil)
-    if err != nil {
-        log.Println("Upgrade: connection failed")
-        return
-    }
-    clients[conn] = true
-    defer conn.Close()
-    log.Println("client connected")
+// map of current rooms
+var rooms = make(map[string]map[*websocket.Conn]bool)
+var roomMu sync.Mutex
 
-    for {
-        message_type, payload, err := conn.ReadMessage()
-        if err != nil {
-            log.Println("ReadMessage: ", err)
-            return
-        }
+func generateRoomCode(length int) string {
+	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz"
+	rand.Seed(time.Now().UnixNano())
 
-        if message_type == websocket.CloseMessage {
-            log.Println("client disconnected")
-            mu.Lock()
-            delete(clients, conn)
-            mu.Unlock()
-            return
-        }
+	code := make([]byte, length)
 
-        for client := range clients {
-            err = client.WriteMessage(message_type, payload)
-            if err != nil {
-                log.Println("WriteMessage: ", err)
-                client.Close()
-                mu.Lock()
-                delete(clients, client)
-                mu.Unlock()
-                continue
-            }
-            log.Printf("received payload: %s", payload) 
-        }
-    }
+	for i := range code {
+		code[i] = charset[rand.Intn(len(charset))]
+	}
+
+	return string(code)
 }
 
-func serialize_points(w http.ResponseWriter, r *http.Request) {
+func createRoom(w http.ResponseWriter, r *http.Request) {
+	roomCode := generateRoomCode(6)
+
+	// add room to global rooms map without causing race conditions
+	roomMu.Lock()
+	rooms[roomCode] = make(map[*websocket.Conn]bool)
+	roomMu.Unlock()
+
+	// send { "room" : roomCode } back to frontend/client so the frontend knows
+	// what room was just created
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"room": roomCode,
+	})
+}
+
+func serializePoints(w http.ResponseWriter, r *http.Request) {
     conn, err := upgrader.Upgrade(w, r, nil)
     if err != nil {
         log.Println("Upgrade: connection failed")
@@ -85,13 +82,13 @@ func serialize_points(w http.ResponseWriter, r *http.Request) {
     log.Println("client connected")
 
     for {
-        message_type, payload, err := conn.ReadMessage()
+        messageType, payload, err := conn.ReadMessage()
         if err != nil {
             log.Println("ReadMessage: err")
             return
         }
 
-        if message_type == websocket.CloseMessage {
+        if messageType == websocket.CloseMessage {
             log.Println("client disconnected")
             mu.Lock()
             delete(clients, conn)
@@ -100,23 +97,21 @@ func serialize_points(w http.ResponseWriter, r *http.Request) {
         }
         
         // serialize draw commands
-        var draw_commands []DrawCommand
-        err = json.Unmarshal([]byte(payload), &draw_commands)
+        var drawCommands []DrawCommand
+        err = json.Unmarshal([]byte(payload), &drawCommands)
         if err != nil {
             log.Println("Unmarshal: ", err)
             return
         }
-        broadcast_data, err := json.Marshal(draw_commands)
+        broadcastData, err := json.Marshal(drawCommands)
         if err != nil {
             log.Println("Marshal: ", err)
             return
         }
-        //log.Println("-------------------------------------------")
-        //log.Println(string(broadcast_data))
 
         for client := range clients {
             if client != conn {
-                err = client.WriteMessage(message_type, broadcast_data)
+                err = client.WriteMessage(messageType, broadcastData)
                 if err != nil {
                     log.Println("WriteMessage: ", err)
                     client.Close()
@@ -142,7 +137,8 @@ func main() {
     }
 
     address := host + ":" + port
-    http.HandleFunc("/ws", serialize_points)
+    http.HandleFunc("/ws", serializePoints)
+	http.HandleFunc("/create", createRoom)
 
     log.Printf("server started at %v", address)
 
