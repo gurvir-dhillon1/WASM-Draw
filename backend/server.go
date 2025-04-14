@@ -30,6 +30,11 @@ type DrawCommand struct {
     Type   int      `json:"type"`
 }
 
+type Room struct {
+	clients	map[*websocket.Conn]bool
+	mu		sync.Mutex
+}
+
 var mu sync.Mutex
 var upgrader = websocket.Upgrader{
     CheckOrigin: func(r *http.Request) bool {
@@ -38,8 +43,8 @@ var upgrader = websocket.Upgrader{
 }
 
 // map of current rooms
-var rooms = make(map[string]map[*websocket.Conn]bool)
-var roomMu sync.Mutex
+var rooms = make(map[string]*Room)
+var globalMu sync.Mutex
 
 func generateRoomCode(length int) string {
 	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz"
@@ -58,9 +63,9 @@ func createRoom(w http.ResponseWriter, r *http.Request) {
 	roomCode := generateRoomCode(6)
 
 	// add room to global rooms map without causing race conditions
-	roomMu.Lock()
+	globalMu.Lock()
 	rooms[roomCode] = make(map[*websocket.Conn]bool)
-	roomMu.Unlock()
+	globalMu.Unlock()
 
 	// send { "room" : roomCode } back to frontend/client so the frontend knows
 	// what room was just created
@@ -70,16 +75,34 @@ func createRoom(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func serializePoints(w http.ResponseWriter, r *http.Request) {
+func handleWebSocket(w http.ResponseWriter, r *http.Request) {
+	roomCode := r.URL.Query().Get("room")
+	if roomCode == "" {
+		http.Error(w, "Missing room parameter", http.StatusBadRequest)
+		return
+	}
+
+	globalMu.Lock()
+	rooms, exists := rooms[roomCode]
+	globalMu.Unlock()
+
+	if !exists {
+		http.Error(w, "Invalid room code", http.StatusNotFound)
+		return
+	}
+
     conn, err := upgrader.Upgrade(w, r, nil)
     if err != nil {
         log.Println("Upgrade: connection failed")
         return
     }
-
-    clients[conn] = true
     defer conn.Close()
-    log.Println("client connected")
+
+	room.mu.Lock()
+	room.clients[conn] = true
+	room.mu.Unlock()
+
+	log.Printf("Client joined room %s", roomCode)
 
     for {
         messageType, payload, err := conn.ReadMessage()
@@ -88,14 +111,6 @@ func serializePoints(w http.ResponseWriter, r *http.Request) {
             return
         }
 
-        if messageType == websocket.CloseMessage {
-            log.Println("client disconnected")
-            mu.Lock()
-            delete(clients, conn)
-            mu.Unlock()
-            return
-        }
-        
         // serialize draw commands
         var drawCommands []DrawCommand
         err = json.Unmarshal([]byte(payload), &drawCommands)
@@ -109,19 +124,21 @@ func serializePoints(w http.ResponseWriter, r *http.Request) {
             return
         }
 
-        for client := range clients {
+        for client := range room.clients {
             if client != conn {
                 err = client.WriteMessage(messageType, broadcastData)
                 if err != nil {
                     log.Println("WriteMessage: ", err)
                     client.Close()
-                    mu.Lock()
+                    room.mu.Lock()
                     delete(clients, client)
-                    mu.Unlock()
+                    room.mu.Unlock()
                 }
             }
         }
     }
+
+	// need to handle disconnecting from a room and deleting empty rooms
 }
 
 func main() {
@@ -137,7 +154,7 @@ func main() {
     }
 
     address := host + ":" + port
-    http.HandleFunc("/ws", serializePoints)
+    http.HandleFunc("/ws", handleWebSocket)
 	http.HandleFunc("/create", createRoom)
 
     log.Printf("server started at %v", address)
