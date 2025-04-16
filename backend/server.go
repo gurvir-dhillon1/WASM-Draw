@@ -64,7 +64,9 @@ func createRoom(w http.ResponseWriter, r *http.Request) {
 
 	// add room to global rooms map without causing race conditions
 	globalMu.Lock()
-	rooms[roomCode] = make(map[*websocket.Conn]bool)
+	rooms[roomCode] = &Room{
+		clients: make(map[*websocket.Conn]bool),
+	}
 	globalMu.Unlock()
 
 	// send { "room" : roomCode } back to frontend/client so the frontend knows
@@ -83,7 +85,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 
 	globalMu.Lock()
-	rooms, exists := rooms[roomCode]
+	room, exists := rooms[roomCode]
 	globalMu.Unlock()
 
 	if !exists {
@@ -93,7 +95,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 
     conn, err := upgrader.Upgrade(w, r, nil)
     if err != nil {
-        log.Println("Upgrade: connection failed")
+        log.Println("Upgrade: ", err)
         return
     }
     defer conn.Close()
@@ -107,7 +109,19 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
     for {
         messageType, payload, err := conn.ReadMessage()
         if err != nil {
-            log.Println("ReadMessage: err")
+            log.Println("ReadMessage: ", err)
+			room.mu.Lock()
+			delete(room.clients, conn)
+			isEmpty := len(room.clients) == 0
+			room.mu.Unlock()
+
+			if isEmpty {
+				globalMu.Lock()
+				delete(rooms, roomCode)
+				globalMu.Unlock()
+				log.Printf("Room %s deleted (empty)", roomCode)
+			}
+			log.Printf("Client disconnected from room %s", roomCode)
             return
         }
 
@@ -124,21 +138,19 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
             return
         }
 
+		room.mu.Lock()
         for client := range room.clients {
             if client != conn {
                 err = client.WriteMessage(messageType, broadcastData)
                 if err != nil {
                     log.Println("WriteMessage: ", err)
                     client.Close()
-                    room.mu.Lock()
-                    delete(clients, client)
-                    room.mu.Unlock()
+                    delete(room.clients, client)
                 }
             }
         }
+		room.mu.Unlock()
     }
-
-	// need to handle disconnecting from a room and deleting empty rooms
 }
 
 func main() {
