@@ -48,7 +48,7 @@ var globalMu sync.Mutex
 
 func generateRoomCode(length int) string {
 	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz"
-	rand.Seed(time.Now().UnixNano())
+	rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	code := make([]byte, length)
 
