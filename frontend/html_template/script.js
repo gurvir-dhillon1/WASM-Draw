@@ -133,6 +133,7 @@ const change_join_button = (button_id, joined=true) => {
 
 document.getElementById("join-room").addEventListener("click", () => {
     document.getElementById("room-modal").classList.remove("hidden")
+    document.getElementById("room-code-input").focus()
 })
 
 document.getElementById("create-room-button").addEventListener("click", async () => {
@@ -141,15 +142,70 @@ document.getElementById("create-room-button").addEventListener("click", async ()
     const data = await res.json()
     console.log(data)
     const roomCode = data.room
-    joinRoom(roomCode)
+    open_connection(roomCode)
     document.getElementById("room-modal").classList.add("hidden")
+    document.getElementById("canvas").focus()
 })
 
 document.getElementById("join-room-button").addEventListener("click", () => {
     const roomCode = document.getElementById("room-code-input").value.trim()
 
     if (roomCode) {
-        joinRoom(roomCode)
+        open_connection(roomCode)
         document.getElementById("room-modal").classList.add("hidden")
+        document.getElementById("canvas").focus()
     }
 })
+
+// Direct input field value manipulation
+document.querySelectorAll('input, textarea').forEach(inputElement => {
+    // Keep track of the current input value
+    let currentValue = inputElement.value || '';
+    
+    // Handle focus - store the initial value
+    inputElement.addEventListener('focus', () => {
+        currentValue = inputElement.value || '';
+        console.log('Input focused, current value:', currentValue);
+    });
+    
+    // Handle keydown - update the input value manually
+    inputElement.addEventListener('keydown', (e) => {
+        // Stop event propagation
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        
+        // Get key information
+        const key = e.key;
+        
+        // Handle different key presses
+        if (key === 'Backspace') {
+            // Remove the last character
+            currentValue = currentValue.slice(0, -1);
+        } else if (key === 'Enter') {
+            // Handle enter key if needed
+            // For example, trigger a button click
+        } else if (key.length === 1) {
+            // Add character to value (ignore special keys)
+            currentValue += key;
+        }
+        
+        // Update the input value
+        inputElement.value = currentValue;
+        
+        console.log('Key pressed:', key, 'New value:', currentValue);
+        
+        // Create an input event to trigger any listeners
+        const inputEvent = new Event('input', { bubbles: true });
+        inputElement.dispatchEvent(inputEvent);
+    });
+});
+
+// Make sure inputs keep focus when clicked
+document.querySelectorAll('input, textarea').forEach(inputElement => {
+    inputElement.addEventListener('mousedown', (e) => {
+        // Let the click happen normally
+        setTimeout(() => {
+            inputElement.focus();
+        }, 0);
+    });
+});

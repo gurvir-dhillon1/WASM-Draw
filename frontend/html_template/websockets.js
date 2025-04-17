@@ -3,14 +3,14 @@ console.log("initing websockets")
 let websocket = null
 let draw_stack_interval = null
 
-const open_connection = () => {
+const open_connection = (roomCode) => {
     if (check_connection()) {
         console.log("websocket is already open")
         return
     }
     const is_production = window.location.hostname !== "localhost"
-    const default_url = "ws://localhost:8080/ws"
-    const prod_url = "wss://wasm-draw.art/ws"
+    const default_url = `ws://localhost:8080/ws?room=${roomCode}`
+    const prod_url = `wss://wasm-draw.art/ws?room=${roomCode}`
     const url = is_production ? prod_url : default_url
     websocket = new WebSocket(url)
 
