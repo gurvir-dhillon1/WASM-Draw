@@ -16,6 +16,7 @@ const open_connection = (roomCode) => {
 
     websocket.onopen = () => {
         console.log("websocket connection established", url)
+        showRoomCode(roomCode)
         change_join_button("join-room", true)
         const processDrawStack = async () => {
             if (check_connection()) {
@@ -33,6 +34,7 @@ const open_connection = (roomCode) => {
 
     websocket.onclose = () => {
         console.log("websocket connection closed")
+        hideRoomCode()
         change_join_button("join-room", false)
         clearTimeout(draw_stack_interval)
         draw_stack_interval = null

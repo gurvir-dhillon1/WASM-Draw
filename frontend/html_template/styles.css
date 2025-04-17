@@ -87,6 +87,10 @@ button#join-room {
     display: none;
 }
 
+.room-code.hidden {
+    display: none;
+}
+
 .modal-content {
     background: white;
     padding: 2rem;

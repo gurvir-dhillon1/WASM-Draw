@@ -131,6 +131,18 @@ const change_join_button = (button_id, joined=true) => {
     join_button.classList.add(joined ? "joined" : "not-joined")
 }
 
+const showRoomCode = (roomCode) => {
+    const roomCodeDiv = document.getElementById("room-code")
+    roomCodeDiv.textContent = `room code: ${roomCode}`
+    roomCodeDiv.classList.remove("hidden")
+}
+
+const hideRoomCode = () => {
+    const roomCodeDiv = document.getElementById("room-code")
+    roomCodeDiv.textContent = ""
+    roomCodeDiv.classList.add("hidden")
+}
+
 document.getElementById("join-room").addEventListener("click", () => {
     if (!websocket) {
         document.getElementById("room-modal").classList.remove("hidden")
