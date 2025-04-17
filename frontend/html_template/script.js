@@ -10,7 +10,7 @@ var Module = {
         if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ')
         console.error(text)
         if (document.getElementById('output')) {
-            document.getElementById('output').innerHTML += '<span style="color: red">' + text + "</span><br>";
+            document.getElementById('output').innerHTML += '<span style="color: red">' + text + "</span><br>"
         }
     },
     setStatus: (text) => {
@@ -132,12 +132,24 @@ const change_join_button = (button_id, joined=true) => {
 }
 
 document.getElementById("join-room").addEventListener("click", () => {
-    const join_button = document.getElementById("join-room")
-    if (check_connection()) {
-        join_button.disabled = true
-        close_connection()
-    } else {
-        join_button.disabled = true
-        open_connection()
+    document.getElementById("room-modal").classList.remove("hidden")
+})
+
+document.getElementById("create-room-button").addEventListener("click", async () => {
+    const res = await fetch("http://localhost:8080/create")
+
+    const data = await res.json()
+    console.log(data)
+    const roomCode = data.room
+    joinRoom(roomCode)
+    document.getElementById("room-modal").classList.add("hidden")
+})
+
+document.getElementById("join-room-button").addEventListener("click", () => {
+    const roomCode = document.getElementById("room-code-input").value.trim()
+
+    if (roomCode) {
+        joinRoom(roomCode)
+        document.getElementById("room-modal").classList.add("hidden")
     }
 })
