@@ -161,3 +161,8 @@ document.getElementById("join-room-button").addEventListener("click", () => {
         document.getElementById("canvas").focus()
     }
 })
+
+document.getElementById("close-modal-button").addEventListener("click", () => {
+    document.getElementById("room-modal").classList.add("hidden")
+    document.getElementById("canvas").focus()
+})
