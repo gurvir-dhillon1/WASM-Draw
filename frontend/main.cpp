@@ -357,7 +357,7 @@ int main() {
     gameState.running = true;
     int width = EM_ASM_INT({ return window.innerWidth });
     int height = EM_ASM_INT({ return window.innerHeight });
-    
+    SDL_SetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT, "#canvas");   
     if (SDL_CreateWindowAndRenderer(width, height, SDL_WINDOW_SHOWN, &gameState.window, &gameState.renderer) < 0) {
         std::cerr << "failed to create window or renderer" << SDL_GetError() << std::endl;
         SDL_Quit();
