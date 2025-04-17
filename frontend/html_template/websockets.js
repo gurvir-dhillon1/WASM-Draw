@@ -74,6 +74,7 @@ const check_connection = () => {
 const close_connection = () => {
     if (check_connection()) {
         websocket.close(1000, "closing connection normally")
+        websocket = null
     } else {
         console.log("websocket is already closed or not initialized")
     }
