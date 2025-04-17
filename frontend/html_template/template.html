@@ -10,6 +10,7 @@
 <body>
     <div class="title">
         <h3>wasm draw</h3>
+        <h3 id="room-code" class="room-code hidden"></h3>
     </div>
     <div class="buttons-container">
         <!--
@@ -54,7 +55,21 @@
             </svg>
         </button>
     </div>
-    <canvas id="canvas"></canvas>
+
+    <!-- Modal -->
+    <div id="room-modal" class="modal hidden">
+        <div class="modal-content">
+            <button class="close-modal-button" id="close-modal-button" aria-label="Close">&times;</button>
+            <h3>Join or Create Room</h3>
+            <input type="text" id="room-code-input" placeholder="Enter Room Code" tabIndex="1" />
+            <div class="modal-buttons">
+                <button id="create-room-button">Create Room</button>
+                <button id="join-room-button">Join Room</button>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="canvas" tabIndex="0"></canvas>
     <script type="text/javascript" src="html_template/script.js"></script>
     <script type="text/javascript" src="html_template/websockets.js"></script>
     {{{ SCRIPT }}}

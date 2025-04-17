@@ -8,8 +8,11 @@ import (
     "os"
     "sync"
     "github.com/joho/godotenv"
+	"math/rand"
+	"time"
 )
 
+// Enums for the different drawing types
 const (
     FREE = iota
     LINE
@@ -17,6 +20,8 @@ const (
     RECT
 )
 
+// this struct helps us Unmarshal and Marshal the incoming JSON bytes
+// from the frontend
 type DrawCommand struct {
     StartX int      `json:"startX"`
     StartY int      `json:"startY"`
@@ -25,107 +30,129 @@ type DrawCommand struct {
     Type   int      `json:"type"`
 }
 
+type Room struct {
+	clients	map[*websocket.Conn]bool
+	mu		sync.Mutex
+}
+
 var mu sync.Mutex
 var upgrader = websocket.Upgrader{
     CheckOrigin: func(r *http.Request) bool {
         return true
     },
 }
-var clients = make(map[*websocket.Conn]bool)
 
-func echo(w http.ResponseWriter, r *http.Request) {
-    conn, err := upgrader.Upgrade(w, r, nil)
-    if err != nil {
-        log.Println("Upgrade: connection failed")
-        return
-    }
-    clients[conn] = true
-    defer conn.Close()
-    log.Println("client connected")
+// map of current rooms
+var rooms = make(map[string]*Room)
+var globalMu sync.Mutex
 
-    for {
-        message_type, payload, err := conn.ReadMessage()
-        if err != nil {
-            log.Println("ReadMessage: ", err)
-            return
-        }
+func generateRoomCode(length int) string {
+	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz"
+	rand.New(rand.NewSource(time.Now().UnixNano()))
 
-        if message_type == websocket.CloseMessage {
-            log.Println("client disconnected")
-            mu.Lock()
-            delete(clients, conn)
-            mu.Unlock()
-            return
-        }
+	code := make([]byte, length)
 
-        for client := range clients {
-            err = client.WriteMessage(message_type, payload)
-            if err != nil {
-                log.Println("WriteMessage: ", err)
-                client.Close()
-                mu.Lock()
-                delete(clients, client)
-                mu.Unlock()
-                continue
-            }
-            log.Printf("received payload: %s", payload) 
-        }
-    }
+	for i := range code {
+		code[i] = charset[rand.Intn(len(charset))]
+	}
+
+	return string(code)
 }
 
-func serialize_points(w http.ResponseWriter, r *http.Request) {
+func createRoom(w http.ResponseWriter, r *http.Request) {
+	roomCode := generateRoomCode(6)
+
+	// add room to global rooms map without causing race conditions
+	globalMu.Lock()
+	rooms[roomCode] = &Room{
+		clients: make(map[*websocket.Conn]bool),
+	}
+	globalMu.Unlock()
+
+	// send { "room" : roomCode } back to frontend/client so the frontend knows
+	// what room was just created
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8000")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	json.NewEncoder(w).Encode(map[string]string{
+		"room": roomCode,
+	})
+}
+
+func handleWebSocket(w http.ResponseWriter, r *http.Request) {
+	roomCode := r.URL.Query().Get("room")
+	if roomCode == "" {
+		http.Error(w, "Missing room parameter", http.StatusBadRequest)
+		return
+	}
+
+	globalMu.Lock()
+	room, exists := rooms[roomCode]
+	globalMu.Unlock()
+
+	if !exists {
+		http.Error(w, "Invalid room code", http.StatusNotFound)
+		return
+	}
+
     conn, err := upgrader.Upgrade(w, r, nil)
     if err != nil {
-        log.Println("Upgrade: connection failed")
+        log.Println("Upgrade: ", err)
         return
     }
-
-    clients[conn] = true
     defer conn.Close()
-    log.Println("client connected")
+
+	room.mu.Lock()
+	room.clients[conn] = true
+	room.mu.Unlock()
+
+	log.Printf("Client joined room %s", roomCode)
 
     for {
-        message_type, payload, err := conn.ReadMessage()
+        messageType, payload, err := conn.ReadMessage()
         if err != nil {
-            log.Println("ReadMessage: err")
+            log.Println("ReadMessage: ", err)
+			room.mu.Lock()
+			delete(room.clients, conn)
+			isEmpty := len(room.clients) == 0
+			room.mu.Unlock()
+
+			if isEmpty {
+				globalMu.Lock()
+				delete(rooms, roomCode)
+				globalMu.Unlock()
+				log.Printf("Room %s deleted (empty)", roomCode)
+			}
+			log.Printf("Client disconnected from room %s", roomCode)
             return
         }
 
-        if message_type == websocket.CloseMessage {
-            log.Println("client disconnected")
-            mu.Lock()
-            delete(clients, conn)
-            mu.Unlock()
-            return
-        }
-        
         // serialize draw commands
-        var draw_commands []DrawCommand
-        err = json.Unmarshal([]byte(payload), &draw_commands)
+        var drawCommands []DrawCommand
+        err = json.Unmarshal([]byte(payload), &drawCommands)
         if err != nil {
             log.Println("Unmarshal: ", err)
             return
         }
-        broadcast_data, err := json.Marshal(draw_commands)
+        broadcastData, err := json.Marshal(drawCommands)
         if err != nil {
             log.Println("Marshal: ", err)
             return
         }
-        //log.Println("-------------------------------------------")
-        //log.Println(string(broadcast_data))
 
-        for client := range clients {
+		room.mu.Lock()
+        for client := range room.clients {
             if client != conn {
-                err = client.WriteMessage(message_type, broadcast_data)
+                err = client.WriteMessage(messageType, broadcastData)
                 if err != nil {
                     log.Println("WriteMessage: ", err)
                     client.Close()
-                    mu.Lock()
-                    delete(clients, client)
-                    mu.Unlock()
+                    delete(room.clients, client)
                 }
             }
         }
+		room.mu.Unlock()
     }
 }
 
@@ -142,7 +169,8 @@ func main() {
     }
 
     address := host + ":" + port
-    http.HandleFunc("/ws", serialize_points)
+    http.HandleFunc("/ws", handleWebSocket)
+	http.HandleFunc("/create", createRoom)
 
     log.Printf("server started at %v", address)
 
