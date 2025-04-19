@@ -154,7 +154,7 @@ document.getElementById("join-room").addEventListener("click", () => {
 })
 
 document.getElementById("create-room-button").addEventListener("click", async () => {
-    const res = await fetch("http://localhost:8080/create")
+    const res = await fetch("https://wasm-draw.art/create")
 
     const data = await res.json()
     console.log(data)
