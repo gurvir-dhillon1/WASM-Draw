@@ -60,6 +60,16 @@ func generateRoomCode(length int) string {
 }
 
 func createRoom(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "http://wasm-draw.art")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	if r.Method == http.MethodOptions {
+		// preflight request; return 200 with headers
+		w.WriteHeader(http.StatusOK)
+		return
+	}
 	roomCode := generateRoomCode(6)
 
 	// add room to global rooms map without causing race conditions
@@ -71,10 +81,6 @@ func createRoom(w http.ResponseWriter, r *http.Request) {
 
 	// send { "room" : roomCode } back to frontend/client so the frontend knows
 	// what room was just created
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8000")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	json.NewEncoder(w).Encode(map[string]string{
 		"room": roomCode,
 	})
