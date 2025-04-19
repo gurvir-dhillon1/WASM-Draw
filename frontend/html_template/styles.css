@@ -21,7 +21,7 @@ canvas {
 .buttons-container {
     position: absolute;
     right: 0;
-    bottom: 0;
+    bottom: 50%;
     display: flex;
     flex-direction: column;
     gap: 10px;
