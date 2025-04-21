@@ -55,9 +55,14 @@ void gameLoop(void* arg) {
                         SDL_RenderPresent(state->renderer);
                     }
                     else {
-                        drawLine(state->renderer, state->drawingTexture, 
-                                state->lastMouseX, state->lastMouseY, 
-                                event.motion.x, event.motion.y, FREE, true);
+                        drawLine( 
+                                state->lastMouseX,
+                                state->lastMouseY, 
+                                event.motion.x,
+                                event.motion.y,
+                                FREE,
+                                1
+                        );
 
                         setLastMousePosition(state, event.motion.x, event.motion.y);
                     }
@@ -73,9 +78,14 @@ void gameLoop(void* arg) {
                 if (event.button.button == SDL_BUTTON_LEFT) {
                     setMousePressed(state, false);
                     if (getLineMode(state)) {
-                        drawLine(state->renderer, state->drawingTexture,
-                                state->lastMouseX, state->lastMouseY, 
-                                event.motion.x, event.motion.y, LINE, true);
+                        drawLine(
+                            state->lastMouseX,
+                            state->lastMouseY, 
+                            event.motion.x,
+                            event.motion.y,
+                            LINE,
+                            1
+                        );
                         setLineMode(state); // Toggle off
                     } 
                     else if (getCircleMode(state)) {

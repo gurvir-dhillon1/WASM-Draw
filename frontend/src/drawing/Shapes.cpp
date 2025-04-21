@@ -3,19 +3,17 @@
 #include "drawing/DrawingCommands.h"
 
 void drawLine(
-        SDL_Renderer* renderer,
-        SDL_Texture* targetTexture,
         int startX,
         int startY,
         int endX,
         int endY,
         int type,
-        bool add_to_stack
+        int add_to_stack
 ) {
-    SDL_SetRenderTarget(renderer, targetTexture);
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderDrawLine(renderer, startX, startY, endX, endY);
-    SDL_SetRenderTarget(renderer, NULL);
+    SDL_SetRenderTarget(gameState.renderer, gameState.drawingTexture);
+    SDL_SetRenderDrawColor(gameState.renderer, 255, 255, 255, 255);
+    SDL_RenderDrawLine(gameState.renderer, startX, startY, endX, endY);
+    SDL_SetRenderTarget(gameState.renderer, NULL);
     if (add_to_stack)
         addDrawCommand(startX, startY, endX, endY, type);
 }
