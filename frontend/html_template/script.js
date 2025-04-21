@@ -26,6 +26,9 @@ var Module = {
     })(),
     onRuntimeInitialized: () => {
         console.log("emscripten runtime initialized")
+        let width = window.innerWidth
+        let height = window.innerHeight
+        Module.ccall("initialize", "boolean", ["number", "number"], [width, height])
         resizeCanvas()
     }
 }
@@ -33,7 +36,8 @@ var Module = {
 function resizeCanvas() {
     let width = window.innerWidth
     let height = window.innerHeight
-    Module.ccall("resize_renderer", null, ["number", "number"], [width, height])
+    console.log("width", width, "height", height)
+    Module.ccall("resizeRenderer", null, ["number", "number"], [width, height])
 }
 
 function setActiveButton(activeButtonId) {
@@ -112,9 +116,9 @@ const processDrawCommands = () => {
 
 document.getElementById("canvas").addEventListener("mouseup", () => {
     setTimeout(() => {
-        const lineMode = Module.ccall("get_line_mode", "number", [])
-        const circleMode = Module.ccall("get_circle_mode", "number", [])
-        const squareMode = Module.ccall("get_square_mode", "number", [])
+        const lineMode = Module.ccall("getLineMode", "number", [])
+        const circleMode = Module.ccall("getCircleMode", "number", [])
+        const squareMode = Module.ccall("getSquareMode", "number", [])
 
         if (lineMode == 0 && circleMode == 0 && squareMode == 0) {
             setActiveButton(null)
