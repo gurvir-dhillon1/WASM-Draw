@@ -27,7 +27,7 @@ bool initializeGameState(GameState* state, int width, int height) {
     state->running = true;
     state->screenWidth = width;
     state->screenHeight = height;
-    
+    SDL_SetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT, "#canvas");    
     if (SDL_CreateWindowAndRenderer(width, height, SDL_WINDOW_SHOWN, &state->window, &state->renderer) < 0) {
         std::cerr << "Failed to create window or renderer: " << SDL_GetError() << std::endl;
         return false;
@@ -125,11 +125,11 @@ bool resizeRenderer(int width, int height) {
 }
 
 EMSCRIPTEN_KEEPALIVE
-void clearCanvas(GameState* state) {
-    SDL_SetRenderTarget(state->renderer, state->drawingTexture);
-    SDL_SetRenderDrawColor(state->renderer, 0, 0, 0, 255);
-    SDL_RenderClear(state->renderer);
-    SDL_SetRenderTarget(state->renderer, NULL);
+void clearCanvas() {
+    SDL_SetRenderTarget(gameState.renderer, gameState.drawingTexture);
+    SDL_SetRenderDrawColor(gameState.renderer, 0, 0, 0, 255);
+    SDL_RenderClear(gameState.renderer);
+    SDL_SetRenderTarget(gameState.renderer, NULL);
     clearDrawCommands();
 }
 

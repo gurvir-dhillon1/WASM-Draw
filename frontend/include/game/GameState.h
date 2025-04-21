@@ -32,7 +32,7 @@ extern "C" {
 #endif
 // Window and rendering functions
 bool resizeRenderer(int width, int height);
-void clearCanvas(GameState* state);
+void clearCanvas();
 
 // Drawing Mode Functions
 int setLineMode(GameState* state);
