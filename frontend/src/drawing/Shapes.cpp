@@ -1,7 +1,14 @@
 // src/drawing/Shapes.cpp
 #include "drawing/Shapes.h"
 #include "drawing/DrawingCommands.h"
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
+#ifdef __EMSCRIPTEN__
+extern "C" {
+#endif
+EMSCRIPTEN_KEEPALIVE
 void drawLine(
         int startX,
         int startY,
@@ -17,6 +24,8 @@ void drawLine(
     if (add_to_stack)
         addDrawCommand(startX, startY, endX, endY, type);
 }
+
+EMSCRIPTEN_KEEPALIVE
 void drawCircle(SDL_Renderer* renderer, int centerX, int centerY, int radius) {
     int x = radius;
     int y = 0;
@@ -43,6 +52,7 @@ void drawCircle(SDL_Renderer* renderer, int centerX, int centerY, int radius) {
     }
 }
 
+EMSCRIPTEN_KEEPALIVE
 void drawSquare(SDL_Renderer* renderer, int startX, int startY, int endX, int endY) {
     int dx = endX - startX;
     int dy = endY - startY;
@@ -74,3 +84,6 @@ void drawSquare(SDL_Renderer* renderer, int startX, int startY, int endX, int en
     SDL_RenderDrawLine(renderer, x2, y2, startX, y2);            // Bottom edge
     SDL_RenderDrawLine(renderer, startX, y2, startX, startY);    // Left edge
 }
+#ifdef __EMSCRIPTEN__
+}
+#endif
