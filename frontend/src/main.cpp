@@ -15,33 +15,28 @@ void initializeSDL();
 void cleanup();
 
 int main(int argc, char* argv[]) {
-    // Initialize SDL
     initializeSDL();
 
+#ifdef __EMSCRIPTEN__
+    // When targeting WebAssembly, use the emscripten main loop
+    emscripten_set_main_loop_arg(emscriptenLoop, &gameState, 0, 1);
+#else
     // Default window dimensions
     int width = 800;
     int height = 600;
 
-    // Initialize the game state
     if (!initializeGameState(&gameState, width, height)) {
         std::cerr << "Failed to initialize game state!" << std::endl;
         cleanup();
         return 1;
     }
 
-    // Set up the main loop
-#ifdef __EMSCRIPTEN__
-    // When targeting WebAssembly, use the emscripten main loop
-    emscripten_set_main_loop_arg(emscriptenLoop, &gameState, 0, 1);
-#else
-    // Native platform main loop
     while (gameState.running) {
         gameLoop(&gameState);
         SDL_Delay(16); // ~60 fps
     }
 #endif
 
-    // Cleanup resources
     cleanup();
     return 0;
 }

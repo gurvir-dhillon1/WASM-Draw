@@ -76,6 +76,14 @@ void cleanupGameState(GameState* state) {
 #ifdef __EMSCRIPTEN__
 extern "C" {
 #endif
+
+// Wrap initializeGameState inside a simple function so we can initialize the game state from JS
+// This way we can initialize game state -> resize canvas on initial load
+EMSCRIPTEN_KEEPALIVE
+bool initialize(int width, int height) {
+    return initializeGameState(&gameState, width, height);
+}
+
 EMSCRIPTEN_KEEPALIVE
 bool resizeRenderer(int width, int height) {
     std::cout << "Resizing to: " << width << "x" << height << std::endl;
@@ -92,7 +100,7 @@ bool resizeRenderer(int width, int height) {
     );
 
     if (!gameState.drawingTexture) {
-        std::cerr << "Failed to create new texture during resize" << std::endl;
+        std::cerr << "Failed to create new texture during resize: " << SDL_GetError() << std::endl;
         return false;
     }
 
