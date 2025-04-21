@@ -6,77 +6,77 @@
 #endif
 
 // Global variables
-std::vector<int> g_drawStartX;
-std::vector<int> g_drawStartY;
-std::vector<int> g_drawEndX;
-std::vector<int> g_drawEndY;
-std::vector<int> g_drawTypes;
-int g_drawCommandCount = 0;
-int g_lastSentIndex = 0;
+std::vector<int> drawStartX;
+std::vector<int> drawStartY;
+std::vector<int> drawEndX;
+std::vector<int> drawEndY;
+std::vector<int> drawTypes;
+int drawCommandCount = 0;
+int lastSentIndex = 0;
 
 #ifdef __EMSCRIPTEN__
 extern "C" {
 #endif
 
 EMSCRIPTEN_KEEPALIVE
-void add_draw_command(int startX, int startY, int endX, int endY, int type) {
-    g_drawStartX.push_back(startX);
-    g_drawStartY.push_back(startY);
-    g_drawEndX.push_back(endX);
-    g_drawEndY.push_back(endY);
-    g_drawTypes.push_back(type);
-    ++g_drawCommandCount;
+void addDrawCommand(int startX, int startY, int endX, int endY, int type) {
+    drawStartX.push_back(startX);
+    drawStartY.push_back(startY);
+    drawEndX.push_back(endX);
+    drawEndY.push_back(endY);
+    drawTypes.push_back(type);
+    ++drawCommandCount;
 }
 
 EMSCRIPTEN_KEEPALIVE
-int get_draw_command_count() {
-    return g_drawCommandCount;
+int getDrawCommandCount() {
+    return drawCommandCount;
 }
 
 EMSCRIPTEN_KEEPALIVE
-int get_new_command_count() {
-    return g_drawCommandCount - g_lastSentIndex;
+int getNewCommandCount() {
+    return drawCommandCount - lastSentIndex;
 }
 
 EMSCRIPTEN_KEEPALIVE
-void mark_commands_sent() {
-    g_lastSentIndex = g_drawCommandCount;
+void markCommandsSent() {
+    lastSentIndex = drawCommandCount;
 }
 
 EMSCRIPTEN_KEEPALIVE
-int* get_start_x_array() {
-    return g_drawStartX.data();
+int* getStartXArray() {
+    return drawStartX.data();
 }
 
 EMSCRIPTEN_KEEPALIVE
-int* get_start_y_array() {
-    return g_drawStartY.data();
+int* getStartYArray() {
+    return drawStartY.data();
 }
 
 EMSCRIPTEN_KEEPALIVE
-int* get_end_x_array() {
-    return g_drawEndX.data();
+int* getEndXArray() {
+    return drawEndX.data();
 }
 
 EMSCRIPTEN_KEEPALIVE
-int* get_end_y_array() {
-    return g_drawEndY.data();
+int* getEndYArray() {
+    return drawEndY.data();
 }
 
 EMSCRIPTEN_KEEPALIVE
-int* get_draw_types() {
-    return g_drawTypes.data();
+int* getDrawTypes() {
+    return drawTypes.data();
 }
 
 EMSCRIPTEN_KEEPALIVE
-void clear_draw_commands() {
-    g_drawStartX.clear();
-    g_drawStartY.clear();
-    g_drawEndX.clear();
-    g_drawEndY.clear();
-    g_drawTypes.clear();
-    g_drawCommandCount = 0;
-    g_lastSentIndex = 0;
+void clearDrawCommands() {
+    drawStartX.clear();
+    drawStartY.clear();
+    drawEndX.clear();
+    drawEndY.clear();
+    drawTypes.clear();
+    drawCommandCount = 0;
+    lastSentIndex = 0;
 }
 
 #ifdef __EMSCRIPTEN__

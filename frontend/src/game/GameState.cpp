@@ -1,5 +1,6 @@
 // src/game/GameState.cpp
 #include "game/GameState.h"
+#include "drawing/DrawingCommands.h"
 #include <iostream>
 
 #ifdef __EMSCRIPTEN__
@@ -72,6 +73,10 @@ void cleanupGameState(GameState* state) {
     }
 }
 
+#ifdef __EMSCRIPTEN__
+extern "C" {
+#endif
+EMSCRIPTEN_KEEPALIVE
 bool resizeRenderer(GameState* state, int width, int height) {
     std::cout << "Resizing to: " << width << "x" << height << std::endl;
     SDL_Texture* oldTexture = state->drawingTexture;
@@ -111,13 +116,16 @@ bool resizeRenderer(GameState* state, int width, int height) {
     return true;
 }
 
+EMSCRIPTEN_KEEPALIVE
 void clearCanvas(GameState* state) {
     SDL_SetRenderTarget(state->renderer, state->drawingTexture);
     SDL_SetRenderDrawColor(state->renderer, 0, 0, 0, 255);
     SDL_RenderClear(state->renderer);
     SDL_SetRenderTarget(state->renderer, NULL);
+    clearDrawCommands();
 }
 
+EMSCRIPTEN_KEEPALIVE
 int setLineMode(GameState* state) {
     state->lineMode = !state->lineMode;
     state->circleMode = 0;
@@ -125,10 +133,12 @@ int setLineMode(GameState* state) {
     return state->lineMode;
 }
 
+EMSCRIPTEN_KEEPALIVE
 int getLineMode(GameState* state) {
     return state->lineMode;
 }
 
+EMSCRIPTEN_KEEPALIVE
 int setCircleMode(GameState* state) {
     state->lineMode = 0;
     state->circleMode = !state->circleMode;
@@ -136,10 +146,12 @@ int setCircleMode(GameState* state) {
     return state->circleMode;
 }
 
+EMSCRIPTEN_KEEPALIVE
 int getCircleMode(GameState* state) {
     return state->circleMode;
 }
 
+EMSCRIPTEN_KEEPALIVE
 int setSquareMode(GameState* state) {
     state->lineMode = 0;
     state->circleMode = 0;
@@ -147,6 +159,26 @@ int setSquareMode(GameState* state) {
     return state->squareMode;
 }
 
+EMSCRIPTEN_KEEPALIVE
 int getSquareMode(GameState* state) {
     return state->squareMode;
 }
+
+EMSCRIPTEN_KEEPALIVE
+void setLastMousePosition(GameState* state, int lastMouseX, int lastMouseY) {
+    state->lastMouseX = lastMouseX;
+    state->lastMouseY = lastMouseY;
+}
+
+EMSCRIPTEN_KEEPALIVE
+void setMousePressed(GameState* state, bool mouseStatus) {
+    state->mousePressed = mouseStatus;
+}
+
+EMSCRIPTEN_KEEPALIVE
+void setRunning(GameState* state, bool runningStatus) {
+    state->running = runningStatus;
+}
+#ifdef __EMSCRIPTEN__
+}
+#endif

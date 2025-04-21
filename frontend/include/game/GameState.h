@@ -27,6 +27,9 @@ extern GameState gameState;
 bool initializeGameState(GameState* state, int width, int height);
 void cleanupGameState(GameState* state);
 
+#ifdef __EMSCRIPTEN__
+extern "C" {
+#endif
 // Window and rendering functions
 bool resizeRenderer(GameState* state, int width, int height);
 void clearCanvas(GameState* state);
@@ -38,3 +41,11 @@ int setCircleMode(GameState* state);
 int getCircleMode(GameState* state);
 int setSquareMode(GameState* state);
 int getSquareMode(GameState* state);
+
+// Setter Functions
+void setLastMousePosition(GameState* state, int lastMouseX, int lastMouseY);
+void setMousePressed(GameState* state, bool mouseStatus);
+void setRunning(GameState* state, bool runningStatus);
+#ifdef __EMSCRIPTEN__
+}
+#endif

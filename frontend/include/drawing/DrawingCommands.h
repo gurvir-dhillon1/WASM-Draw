@@ -11,15 +11,18 @@ enum Draw_Modes {
 };
 
 // Global variables for drawing commands
-extern std::vector<int> g_drawStartX;
-extern std::vector<int> g_drawStartY;
-extern std::vector<int> g_drawEndX;
-extern std::vector<int> g_drawEndY;
-extern std::vector<int> g_drawTypes;
-extern int g_drawCommandCount;
-extern int g_lastSentIndex;
+extern std::vector<int> drawStartX;
+extern std::vector<int> drawStartY;
+extern std::vector<int> drawEndX;
+extern std::vector<int> drawEndY;
+extern std::vector<int> drawTypes;
+extern int drawCommandCount;
+extern int lastSentIndex;
 
 // Functions for managing drawing commands
+#ifdef __EMSCRIPTEN__
+extern "C" {
+#endif
 void addDrawCommand(int startX, int startY, int endX, int endY, int type);
 int getDrawCommandCount();
 int getNewCommandCount();
@@ -30,3 +33,6 @@ int* getEndXArray();
 int* getEndYArray();
 int* getDrawTypes();
 void clearDrawCommands();
+#ifdef __EMSCRIPTEN__
+}
+#endif

@@ -17,7 +17,7 @@ void drawLine(
     SDL_RenderDrawLine(renderer, startX, startY, endX, endY);
     SDL_SetRenderTarget(renderer, NULL);
     if (add_to_stack)
-        add_draw_command(startX, startY, endX, endY, type);
+        addDrawCommand(startX, startY, endX, endY, type);
 }
 void drawCircle(SDL_Renderer* renderer, int centerX, int centerY, int radius) {
     int x = radius;
