@@ -48,32 +48,26 @@ function setActiveButton(activeButtonId) {
 }
 
 const onLineClick = () => {
-    const lineMode = Module.ccall("set_line_mode", "number", [])
+    const lineMode = Module.ccall("setLineMode", "number", [])
     console.log("Line Mode:", lineMode)
     setActiveButton("line-mode-button")
 }
 
 const onCircleClick = () => {
-    const circleMode = Module.ccall("set_circle_mode", "number", [])
+    const circleMode = Module.ccall("setCircleMode", "number", [])
     console.log("Circle Mode:", circleMode)
     setActiveButton("circle-mode-button")
 }
 
 const onSquareClick = () => {
-    const squareMode = Module.ccall("set_square_mode", "number", [])
+    const squareMode = Module.ccall("setSquareMode", "number", [])
     console.log("Square Mode:", squareMode)
     setActiveButton("square-mode-button")
 }
 
-const getLastMousePosition = () => {
-    const x = Module.ccall("get_last_mouse_x", "number", [])
-    const y = Module.ccall("get_last_mouse_y", "number", [])
-    return [x, y]
-}
-
 const processDrawCommands = () => {
     const newCmdCount = Module.ccall(
-        "get_new_command_count",
+        "getNewCommandCount",
         "number",
         []
     )
@@ -81,16 +75,16 @@ const processDrawCommands = () => {
     if (newCmdCount <= 0) return []
 
     const totalCmdCount = Module.ccall(
-        "get_draw_command_count",
+        "getDrawCommandCount",
         "number",
         []
     )
 
-    const startXPtr = Module.ccall( "get_start_x_array", "number", [])
-    const startYPtr = Module.ccall( "get_start_y_array", "number", [])
-    const endXPtr = Module.ccall( "get_end_x_array", "number", [])
-    const endYPtr = Module.ccall( "get_end_y_array", "number", [])
-    const typePtr = Module.ccall("get_draw_types", "number", [])
+    const startXPtr = Module.ccall( "getStartXArray", "number", [])
+    const startYPtr = Module.ccall( "getStartYArray", "number", [])
+    const endXPtr = Module.ccall( "getEndXArray", "number", [])
+    const endYPtr = Module.ccall( "getEndYArray", "number", [])
+    const typePtr = Module.ccall("getDrawTypes", "number", [])
 
     const startXArr = new Int32Array(Module.HEAP32.buffer, startXPtr, totalCmdCount)
     const startYArr = new Int32Array(Module.HEAP32.buffer, startYPtr, totalCmdCount)
@@ -109,7 +103,7 @@ const processDrawCommands = () => {
         })
     }
 
-    Module.ccall("mark_commands_sent", null, [])
+    Module.ccall("markCommandsSent", null, [])
 
     return cmds
 }
