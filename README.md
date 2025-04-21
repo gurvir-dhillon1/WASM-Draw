@@ -2,7 +2,7 @@
 
 This is a C++ drawing tool that runs in the browser using WebAssembly. You can check it out [HERE](https://wasm-draw.art/). Alternatively, to host it locally, follow the steps below. 
 
-If you prefer not to work with Docker containers, follow the instructions below. Otherwise, simply run `docker-compose up -d` to self-host. Be sure to rebuild the relevant container if you make changes that require recompiling. I’m working on making this process more seamless.
+If you prefer not to work with Docker containers, follow the instructions below. Otherwise, with docker installed on your machine, simply run `docker-compose up -d` to self-host. Be sure to rebuild the relevant container if you make changes that require recompiling. I’m working on making this process more seamless.
 
 ### Prerequisites (for local setup without Docker)
 
