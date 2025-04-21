@@ -77,41 +77,41 @@ void cleanupGameState(GameState* state) {
 extern "C" {
 #endif
 EMSCRIPTEN_KEEPALIVE
-bool resizeRenderer(GameState* state, int width, int height) {
+bool resizeRenderer(int width, int height) {
     std::cout << "Resizing to: " << width << "x" << height << std::endl;
-    SDL_Texture* oldTexture = state->drawingTexture;
+    SDL_Texture* oldTexture = gameState.drawingTexture;
     int oldWidth, oldHeight;
     SDL_QueryTexture(oldTexture, NULL, NULL, &oldWidth, &oldHeight);
 
-    state->drawingTexture = SDL_CreateTexture(
-        state->renderer,
+    gameState.drawingTexture = SDL_CreateTexture(
+        gameState.renderer,
         SDL_PIXELFORMAT_ABGR8888,
         SDL_TEXTUREACCESS_TARGET,
         width,
         height
     );
 
-    if (!state->drawingTexture) {
+    if (!gameState.drawingTexture) {
         std::cerr << "Failed to create new texture during resize" << std::endl;
         return false;
     }
 
-    SDL_SetRenderTarget(state->renderer, state->drawingTexture);
-    SDL_SetRenderDrawColor(state->renderer, 0, 0, 0, 255);
-    SDL_RenderClear(state->renderer);
+    SDL_SetRenderTarget(gameState.renderer, gameState.drawingTexture);
+    SDL_SetRenderDrawColor(gameState.renderer, 0, 0, 0, 255);
+    SDL_RenderClear(gameState.renderer);
 
     SDL_Rect SrcRect = {0, 0, oldWidth, oldHeight};
     SDL_Rect DstRect = {0, 0, oldWidth, oldHeight};
-    SDL_RenderCopy(state->renderer, oldTexture, &SrcRect, &DstRect);
-    SDL_SetRenderTarget(state->renderer, NULL);
+    SDL_RenderCopy(gameState.renderer, oldTexture, &SrcRect, &DstRect);
+    SDL_SetRenderTarget(gameState.renderer, NULL);
 
     SDL_DestroyTexture(oldTexture);
 
-    state->screenWidth = width;
-    state->screenHeight = height;
+    gameState.screenWidth = width;
+    gameState.screenHeight = height;
 
-    SDL_SetWindowSize(state->window, width, height);
-    SDL_RenderSetLogicalSize(state->renderer, width, height);
+    SDL_SetWindowSize(gameState.window, width, height);
+    SDL_RenderSetLogicalSize(gameState.renderer, width, height);
     
     return true;
 }

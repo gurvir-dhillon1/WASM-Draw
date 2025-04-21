@@ -31,7 +31,7 @@ void cleanupGameState(GameState* state);
 extern "C" {
 #endif
 // Window and rendering functions
-bool resizeRenderer(GameState* state, int width, int height);
+bool resizeRenderer(int width, int height);
 void clearCanvas(GameState* state);
 
 // Drawing Mode Functions

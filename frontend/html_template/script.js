@@ -33,7 +33,8 @@ var Module = {
 function resizeCanvas() {
     let width = window.innerWidth
     let height = window.innerHeight
-    Module.ccall("resize_renderer", null, ["number", "number"], [width, height])
+    console.log("width", width, "height", height)
+    Module.ccall("resizeRenderer", null, ["number", "number"], [width, height])
 }
 
 function setActiveButton(activeButtonId) {
