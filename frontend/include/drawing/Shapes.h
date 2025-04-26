@@ -6,6 +6,7 @@
 
 // Drawing functions for shapes
 #ifdef __EMSCRIPTEN__
+#include "drawing/DrawingCommandsBindings.h"
 extern "C" {
 #endif
 void drawLine(

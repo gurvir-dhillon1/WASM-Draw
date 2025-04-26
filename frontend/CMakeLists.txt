@@ -27,6 +27,7 @@ include_directories(
 set(SOURCES
     src/main.cpp
     src/drawing/DrawingCommands.cpp
+    src/drawing/DrawingCommandsBindings.cpp
     src/drawing/Shapes.cpp
     src/game/GameLoop.cpp
     src/game/GameState.cpp

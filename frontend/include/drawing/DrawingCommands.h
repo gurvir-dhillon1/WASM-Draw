@@ -20,19 +20,13 @@ extern int drawCommandCount;
 extern int lastSentIndex;
 
 // Functions for managing drawing commands
-#ifdef __EMSCRIPTEN__
-extern "C" {
-#endif
-void addDrawCommand(int startX, int startY, int endX, int endY, int type);
-int getDrawCommandCount();
-int getNewCommandCount();
-void markCommandsSent();
-int* getStartXArray();
-int* getStartYArray();
-int* getEndXArray();
-int* getEndYArray();
-int* getDrawTypes();
-void clearDrawCommands();
-#ifdef __EMSCRIPTEN__
-}
-#endif
+void addDrawCommandInternal(int startX, int startY, int endX, int endY, int type);
+int getDrawCommandCountInternal();
+int getNewCommandCountInternal();
+void markCommandsSentInternal();
+int* getStartXArrayInternal();
+int* getStartYArrayInternal();
+int* getEndXArrayInternal();
+int* getEndYArrayInternal();
+int* getDrawTypesInternal();
+void clearDrawCommandsInternal();
