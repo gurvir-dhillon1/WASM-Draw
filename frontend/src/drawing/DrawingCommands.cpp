@@ -14,12 +14,7 @@ std::vector<int> drawTypes;
 int drawCommandCount = 0;
 int lastSentIndex = 0;
 
-#ifdef __EMSCRIPTEN__
-extern "C" {
-#endif
-
-EMSCRIPTEN_KEEPALIVE
-void addDrawCommand(int startX, int startY, int endX, int endY, int type) {
+void addDrawCommandInternal(int startX, int startY, int endX, int endY, int type) {
     drawStartX.push_back(startX);
     drawStartY.push_back(startY);
     drawEndX.push_back(endX);
@@ -28,48 +23,39 @@ void addDrawCommand(int startX, int startY, int endX, int endY, int type) {
     ++drawCommandCount;
 }
 
-EMSCRIPTEN_KEEPALIVE
-int getDrawCommandCount() {
+int getDrawCommandCountInternal() {
     return drawCommandCount;
 }
 
-EMSCRIPTEN_KEEPALIVE
-int getNewCommandCount() {
+int getNewCommandCountInternal() {
     return drawCommandCount - lastSentIndex;
 }
 
-EMSCRIPTEN_KEEPALIVE
-void markCommandsSent() {
+void markCommandsSentInternal() {
     lastSentIndex = drawCommandCount;
 }
 
-EMSCRIPTEN_KEEPALIVE
-int* getStartXArray() {
+int* getStartXArrayInternal() {
     return drawStartX.data();
 }
 
-EMSCRIPTEN_KEEPALIVE
-int* getStartYArray() {
+int* getStartYArrayInternal() {
     return drawStartY.data();
 }
 
-EMSCRIPTEN_KEEPALIVE
-int* getEndXArray() {
+int* getEndXArrayInternal() {
     return drawEndX.data();
 }
 
-EMSCRIPTEN_KEEPALIVE
-int* getEndYArray() {
+int* getEndYArrayInternal() {
     return drawEndY.data();
 }
 
-EMSCRIPTEN_KEEPALIVE
-int* getDrawTypes() {
+int* getDrawTypesInternal() {
     return drawTypes.data();
 }
 
-EMSCRIPTEN_KEEPALIVE
-void clearDrawCommands() {
+void clearDrawCommandsInternal() {
     drawStartX.clear();
     drawStartY.clear();
     drawEndX.clear();
@@ -78,7 +64,3 @@ void clearDrawCommands() {
     drawCommandCount = 0;
     lastSentIndex = 0;
 }
-
-#ifdef __EMSCRIPTEN__
-}
-#endif

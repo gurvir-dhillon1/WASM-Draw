@@ -2,6 +2,10 @@
 #pragma once
 #include <SDL.h>
 
+#ifdef __EMSCRIPTEN__
+#include "drawing/DrawingCommandsBindings.h"
+#endif
+
 struct GameState {
     bool running;
     SDL_Window* window;
