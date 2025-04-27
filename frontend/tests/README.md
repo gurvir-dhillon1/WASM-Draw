@@ -1,4 +1,4 @@
-# WASM-Draw Testing Guide
+# WASM Draw Testing Guide
 
 This document explains how to build and run tests for the WASM-Draw project.
 
