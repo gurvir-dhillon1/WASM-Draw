@@ -30,7 +30,7 @@ vcpkg install sdl2
 
 ## Building and Running Tests
 
-Follow these steps to build and run the tests:
+Navigate to the `frontend` directory and follow these steps to build and run the tests:
 
 ### 1. Clean previous build files (if any)
 
