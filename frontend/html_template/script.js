@@ -174,7 +174,6 @@ document.getElementById("create-room-button").addEventListener("click", async ()
     open_connection(roomCode)
     document.getElementById("room-modal").classList.add("hidden")
     document.getElementById("canvas").focus()
-    resetZoom()
 })
 
 document.getElementById("join-room-button").addEventListener("click", () => {
@@ -185,11 +184,9 @@ document.getElementById("join-room-button").addEventListener("click", () => {
         document.getElementById("room-modal").classList.add("hidden")
         document.getElementById("canvas").focus()
     }
-    resetZoom()
 })
 
 document.getElementById("close-modal-button").addEventListener("click", () => {
     document.getElementById("room-modal").classList.add("hidden")
     document.getElementById("canvas").focus()
-    resetZoom()
 })
