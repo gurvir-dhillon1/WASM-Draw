@@ -91,6 +91,10 @@ button#join-room {
     display: none;
 }
 
+#room-code-input {
+    font-size: 16px;
+}
+
 .modal-content {
     background: white;
     padding: 2rem;
