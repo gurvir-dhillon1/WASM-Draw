@@ -122,6 +122,20 @@ document.getElementById("canvas").addEventListener("mouseup", () => {
 
 window.addEventListener("resize", resizeCanvas)
 
+const resetZoom = () => {
+    const viewportMeta = document.querySelector("meta[name='viewport']")
+    if (viewportMeta) {
+        // set viewport to 1:1 and disable zoom briefly
+        viewportMeta.content = "width=device-width, initial-scale=1.0, maximum-scale=1.0"
+
+        // enable zoom again after 300ms delay
+        setTimeout(() => {
+            viewportMeta.content = "width=device-width, initial-scale=1.0"
+        }, 300);;
+        
+    }
+}
+
 const change_join_button = (button_id, joined=true) => {
     const join_button = document.getElementById(button_id)
     join_button.disabled = false
@@ -160,6 +174,7 @@ document.getElementById("create-room-button").addEventListener("click", async ()
     open_connection(roomCode)
     document.getElementById("room-modal").classList.add("hidden")
     document.getElementById("canvas").focus()
+    resetZoom()
 })
 
 document.getElementById("join-room-button").addEventListener("click", () => {
@@ -170,6 +185,7 @@ document.getElementById("join-room-button").addEventListener("click", () => {
         document.getElementById("room-modal").classList.add("hidden")
         document.getElementById("canvas").focus()
     }
+    resetZoom()
 })
 
 document.getElementById("close-modal-button").addEventListener("click", () => {
