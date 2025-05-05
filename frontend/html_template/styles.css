@@ -3,11 +3,11 @@ body, button, canvas {
     cursor: url("mouse.png"), auto !important;
 }
 */
-body {
+html, body {
     position: relative;
     margin: 0;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     font-family: monospace;
     background-color: black;
 }
@@ -19,7 +19,7 @@ canvas {
 }
 
 .buttons-container {
-    position: absolute;
+    position: fixed;
     right: 0;
     bottom: 50%;
     display: flex;
@@ -57,7 +57,7 @@ button#join-room {
 }
 
 .title {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     padding: 10px;
@@ -91,6 +91,10 @@ button#join-room {
     display: none;
 }
 
+#room-code-input {
+    font-size: 16px;
+}
+
 .modal-content {
     background: white;
     padding: 2rem;
@@ -101,7 +105,7 @@ button#join-room {
 }
 
 .modal-buttons button {
-    margin: 0.5rem;
+    padding: 0.5rem;
 }
 
 .close-modal-button {
