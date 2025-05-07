@@ -190,3 +190,13 @@ document.getElementById("close-modal-button").addEventListener("click", () => {
     document.getElementById("room-modal").classList.add("hidden")
     document.getElementById("canvas").focus()
 })
+
+document.getElementById("clear-canvas").addEventListener("click", () => {
+    if (websocket) {
+        const payload = JSON.stringify({ type: "clear-canvas" })
+        websocket.send(payload)
+        Module.ccall('clearCanvas', null, [])
+    } else {
+        Module.ccall('clearCanvas', null, [])
+    }
+})

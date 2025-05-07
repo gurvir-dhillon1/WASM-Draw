@@ -27,7 +27,11 @@ const open_connection = (roomCode) => {
             if (check_connection()) {
                 try {
                     serialized_stack = processDrawCommands()
-                    websocket.send(JSON.stringify(serialized_stack))
+                    let msg = {
+                        type: "draw",
+                        payload: serialized_stack
+                    }
+                    websocket.send(JSON.stringify(msg))
                 } catch (err) {
                     console.error("error getting or processing draw stack", err)
                 }
@@ -51,23 +55,26 @@ const open_connection = (roomCode) => {
     }
 
     websocket.onmessage = (event) => {
-        //console.log("message received: ", event.data)
-        let payload = JSON.parse(event.data)
-        for (const obj of payload) {
-            const startX = obj.startX
-            const startY = obj.startY
-            const endX = obj.endX
-            const endY = obj.endY
-            const type = obj.type
+        let message = JSON.parse(event.data)
+        if (message.type === "draw") {
+            for (const obj of message.payload) {
+                const startX = obj.startX
+                const startY = obj.startY
+                const endX = obj.endX
+                const endY = obj.endY
+                const type = obj.type
 
-            if (type === 0) {
-                Module.ccall(
-                    "drawLine",
-                    null,
-                    ["number", "number", "number", "number", "number", "number"],
-                    [startX, startY, endX, endY, 0, 0]
-                )
+                if (type === 0) {
+                    Module.ccall(
+                        "drawLine",
+                        null,
+                        ["number", "number", "number", "number", "number", "number"],
+                        [startX, startY, endX, endY, 0, 0]
+                    )
+                }
             }
+        } else if (message.type === "clear-canvas") {
+            Module.ccall("clearCanvas", null, [])
         }
     }
 }
