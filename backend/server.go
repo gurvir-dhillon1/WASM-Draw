@@ -32,6 +32,11 @@ type DrawCommand struct {
     Type   int      `json:"type"`
 }
 
+type WebSocketMessage struct {
+	Type	string			`json:"type"`
+	Payload	json.RawMessage	`json:"payload"`
+}
+
 type Room struct {
 	clients	map[*websocket.Conn]bool
 	mu		sync.Mutex
@@ -136,31 +141,58 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
             return
         }
 
-        // serialize draw commands
-        var drawCommands []DrawCommand
-        err = json.Unmarshal([]byte(payload), &drawCommands)
+        var msg WebSocketMessage
+        err = json.Unmarshal(payload, &msg)
         if err != nil {
             log.Println("Unmarshal: ", err)
             return
         }
-        broadcastData, err := json.Marshal(drawCommands)
-        if err != nil {
-            log.Println("Marshal: ", err)
-            return
-        }
+		switch msg.Type {
+			case "draw":
+				var drawCommands []DrawCommand
+				err = json.Unmarshal(msg.Payload, &drawCommands)
+				if err != nil {
+					log.Println("Unmarshal DrawCommands:", err)
+					continue
+				}
+				broadcastData, err := json.Marshal(WebSocketMessage{
+					Type: "draw",
+					Payload: msg.Payload,
+				})
+				if err != nil {
+					log.Println("Marshal: ", err)
+					return
+				}
 
-		room.mu.Lock()
-        for client := range room.clients {
-            if client != conn {
-                err = client.WriteMessage(messageType, broadcastData)
-                if err != nil {
-                    log.Println("WriteMessage: ", err)
-                    client.Close()
-                    delete(room.clients, client)
-                }
-            }
-        }
-		room.mu.Unlock()
+				room.mu.Lock()
+				for client := range room.clients {
+					if client != conn {
+						err = client.WriteMessage(messageType, broadcastData)
+						if err != nil {
+							log.Println("WriteMessage: ", err)
+							client.Close()
+							delete(room.clients, client)
+						}
+					}
+				}
+				room.mu.Unlock()
+			case "clear-canvas":
+				broadcastData, err := json.Marshal(WebSocketMessage{ Type: "clear-canvas" })
+				if err != nil {
+					log.Println("Marshal:", err)
+					continue
+				}
+				room.mu.Lock()
+				for client := range room.clients {
+					err = client.WriteMessage(messageType, broadcastData)
+					if err != nil {
+						log.Println("WriteMessage: ", err)
+					}
+				}
+				room.mu.Unlock()
+			default:
+				log.Println("Unknown message type:", msg.Type)
+		}
     }
 }
 
