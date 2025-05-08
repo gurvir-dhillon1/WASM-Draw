@@ -15,6 +15,11 @@ void addDrawCommand(int startX, int startY, int endX, int endY, int type) {
 }
 
 EMSCRIPTEN_KEEPALIVE
+void addMouseDownCommand() {
+    addMouseDownCommandInternal();
+}
+
+EMSCRIPTEN_KEEPALIVE
 int getDrawCommandCount() {
     return getDrawCommandCountInternal();
 }

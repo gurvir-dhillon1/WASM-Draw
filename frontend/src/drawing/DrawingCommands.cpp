@@ -23,6 +23,15 @@ void addDrawCommandInternal(int startX, int startY, int endX, int endY, int type
     ++drawCommandCount;
 }
 
+void addMouseDownCommandInternal() {
+    drawStartX.push_back(-1);
+    drawStartY.push_back(-1);
+    drawEndX.push_back(-1);
+    drawEndY.push_back(-1);
+    drawTypes.push_back(MOUSEDOWN);
+    ++drawCommandCount;
+}
+
 int getDrawCommandCountInternal() {
     return drawCommandCount;
 }

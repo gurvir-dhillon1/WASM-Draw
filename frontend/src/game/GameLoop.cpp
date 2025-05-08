@@ -13,6 +13,7 @@ void gameLoop(void* arg) {
         switch (event.type) {
             case SDL_MOUSEMOTION:
                 if (state->mousePressed) {
+                    addMouseDownCommandInternal();
                     if (getLineMode(state)) {
                         SDL_SetRenderTarget(state->renderer, NULL);
                         SDL_SetRenderDrawColor(state->renderer, 0, 0, 0, 255);

@@ -9,6 +9,9 @@ EMSCRIPTEN_KEEPALIVE
 void addDrawCommand(int startX, int startY, int endX, int endY, int type);
 
 EMSCRIPTEN_KEEPALIVE
+void addMouseDownCommand();
+
+EMSCRIPTEN_KEEPALIVE
 int getDrawCommandCount();
 
 EMSCRIPTEN_KEEPALIVE

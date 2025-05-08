@@ -13,11 +13,13 @@ import (
 )
 
 // Enums for the different drawing types
+// Make sure this aligns with the ENUM in ~/frontend/include/drawing/DrawingCommands.h
 const (
     FREE = iota
     LINE
     CIRCLE
     RECT
+	MOUSEDOWN
 )
 
 // this struct helps us Unmarshal and Marshal the incoming JSON bytes
