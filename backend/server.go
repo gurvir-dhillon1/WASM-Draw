@@ -10,6 +10,7 @@ import (
     "github.com/joho/godotenv"
 	"math/rand"
 	"time"
+	"strings"
 )
 
 // Enums for the different drawing types
@@ -51,6 +52,8 @@ var upgrader = websocket.Upgrader{
 var rooms = make(map[string]*Room)
 var globalMu sync.Mutex
 
+var allowedOrigins []string
+
 func generateRoomCode(length int) string {
 	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz"
 	rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -65,8 +68,16 @@ func generateRoomCode(length int) string {
 }
 
 func createRoom(w http.ResponseWriter, r *http.Request) {
+	origin := r.Header.Get("Origin")
+
+	for _, allowed := range allowedOrigins {
+		if origin == allowed || allowed == "*" {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			break
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
@@ -202,6 +213,18 @@ func main() {
     }
     port := os.Getenv("PORT")
     host := os.Getenv("HOST")
+	corsOrigin := os.Getenv("ALLOWED_ORIGINS")
+	if corsOrigin == "" {
+		allowedOrigins = []string{
+			"http://localhost:8000",
+			"https://wasm-draw.art",
+		}
+	} else {
+		allowedOrigins = strings.Split(corsOrigin, ",")
+		for i, origin := range allowedOrigins {
+			allowedOrigins[i] = strings.TrimSpace(origin)
+		}
+	}
     if (port == "" || host == "") {
         log.Fatal("host or port env variables not defined")
     }
