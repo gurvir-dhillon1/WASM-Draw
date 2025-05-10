@@ -43,7 +43,7 @@ const open_connection = (roomCode) => {
                     console.error("error getting or processing draw stack", err)
                 }
             }
-            draw_stack_interval = setTimeout(processDrawStack, 50);
+            draw_stack_interval = setTimeout(processDrawStack, 0);
         }
         processDrawStack()
     }
