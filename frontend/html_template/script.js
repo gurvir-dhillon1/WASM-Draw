@@ -166,7 +166,15 @@ document.getElementById("join-room").addEventListener("click", () => {
 })
 
 document.getElementById("create-room-button").addEventListener("click", async () => {
-    const res = await fetch("https://wasm-draw.art/create")
+    const http_protocol = is_production ? "https://" : "http://"
+    const create_url = `${http_protocol}${url}/create`
+    console.log("Creating room at URL:", create_url)
+    const res = await fetch(create_url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    })
 
     const data = await res.json()
     console.log(data)
