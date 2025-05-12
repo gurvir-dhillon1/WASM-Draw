@@ -32,6 +32,10 @@ canvas {
     cursor: pointer;
 }
 
+button {
+    cursor: pointer;
+}
+
 button#clear-canvas,
 button#join-room {
     width: 50px;
