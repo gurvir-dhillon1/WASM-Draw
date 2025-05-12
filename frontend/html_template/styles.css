@@ -28,6 +28,10 @@ canvas {
     padding: 10px;
 }
 
+#room-code-container {
+    cursor: pointer;
+}
+
 button#clear-canvas,
 button#join-room {
     width: 50px;
