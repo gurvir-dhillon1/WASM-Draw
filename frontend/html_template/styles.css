@@ -74,6 +74,10 @@ button#join-room {
     color: white;
 }
 
+.title-text {
+    cursor: default;
+}
+
 .active {
     background-color: grey;
     color: white;
