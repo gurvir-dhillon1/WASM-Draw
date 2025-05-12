@@ -146,13 +146,15 @@ const change_join_button = (button_id, joined=true) => {
 const showRoomCode = (roomCode) => {
     const roomCodeDiv = document.getElementById("room-code")
     roomCodeDiv.textContent = `room code: ${roomCode}`
-    roomCodeDiv.classList.remove("hidden")
+    const roomCodeContainerDiv = document.getElementById("room-code-container")
+    roomCodeContainerDiv.classList.remove("hidden")
 }
 
 const hideRoomCode = () => {
     const roomCodeDiv = document.getElementById("room-code")
     roomCodeDiv.textContent = ""
-    roomCodeDiv.classList.add("hidden")
+    const roomCodeContainerDiv = document.getElementById("room-code-container")
+    roomCodeContainerDiv.classList.add("hidden")
 }
 
 document.getElementById("join-room").addEventListener("click", () => {
@@ -207,4 +209,10 @@ document.getElementById("clear-canvas").addEventListener("click", () => {
     } else {
         Module.ccall('clearCanvas', null, [])
     }
+})
+
+document.getElementById("room-code-container").addEventListener("click", () => {
+    const roomCode = document.getElementById("room-code").textContent.split(":")[1].trim()
+    navigator.clipboard.writeText(roomCode)
+    alert("Room code copied!")
 })
