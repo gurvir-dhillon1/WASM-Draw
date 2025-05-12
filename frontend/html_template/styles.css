@@ -51,6 +51,12 @@ button#join-room {
     display: none;
 }
 
+.room-code {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
 .size-1 {
     width: 24px;
     height: 24px;
