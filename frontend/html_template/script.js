@@ -210,3 +210,9 @@ document.getElementById("clear-canvas").addEventListener("click", () => {
         Module.ccall('clearCanvas', null, [])
     }
 })
+
+document.getElementById("room-code-container").addEventListener("click", () => {
+    const roomCode = document.getElementById("room-code").textContent.split(":")[1].trim()
+    navigator.clipboard.writeText(roomCode)
+    alert("Room code copied!")
+})
