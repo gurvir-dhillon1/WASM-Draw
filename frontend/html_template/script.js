@@ -153,7 +153,8 @@ const showRoomCode = (roomCode) => {
 const hideRoomCode = () => {
     const roomCodeDiv = document.getElementById("room-code")
     roomCodeDiv.textContent = ""
-    roomCodeDiv.classList.add("hidden")
+    const roomCodeContainerDiv = document.getElementById("room-code-container")
+    roomCodeContainerDiv.classList.add("hidden")
 }
 
 document.getElementById("join-room").addEventListener("click", () => {
