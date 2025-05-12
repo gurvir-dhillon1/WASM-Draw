@@ -146,7 +146,8 @@ const change_join_button = (button_id, joined=true) => {
 const showRoomCode = (roomCode) => {
     const roomCodeDiv = document.getElementById("room-code")
     roomCodeDiv.textContent = `room code: ${roomCode}`
-    roomCodeDiv.classList.remove("hidden")
+    const roomCodeContainerDiv = document.getElementById("room-code-container")
+    roomCodeContainerDiv.classList.remove("hidden")
 }
 
 const hideRoomCode = () => {
