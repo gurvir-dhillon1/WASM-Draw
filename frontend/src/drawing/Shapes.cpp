@@ -35,7 +35,24 @@ void erase(
     SDL_SetRenderTarget(gameState.renderer, gameState.drawingTexture);
     SDL_SetRenderDrawColor(gameState.renderer, 0, 0, 0, 255);
     
-    SDL_RenderDrawLine(gameState.renderer, startX, startY, endX, endY);
+    // Define eraser size (width and height of rectangle)
+    const int eraserSize = 20;
+    const int halfSize = eraserSize / 2;
+    
+    // For smooth erasing, we'll interpolate points between start and end
+    float distance = sqrt(pow(endX - startX, 2) + pow(endY - startY, 2));
+    int steps = (distance < 1) ? 1 : (int)distance * 2; // Double the distance for more density
+    
+    for (int i = 0; i <= steps; i++) {
+        float t = (steps == 0) ? 0.0f : (float)i / (float)steps;
+        int x = startX + (endX - startX) * t;
+        int y = startY + (endY - startY) * t;
+        
+        // Create and draw a filled rectangle centered at the current point
+        SDL_Rect rect = {x - halfSize, y - halfSize, eraserSize, eraserSize};
+        SDL_RenderFillRect(gameState.renderer, &rect);
+    }
+    
     SDL_SetRenderTarget(gameState.renderer, NULL);
     if (add_to_stack)
         addDrawCommand(startX, startY, endX, endY, ERASE);
