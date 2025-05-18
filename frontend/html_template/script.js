@@ -36,7 +36,6 @@ var Module = {
 function resizeCanvas() {
     let width = window.innerWidth
     let height = window.innerHeight
-    console.log("width", width, "height", height)
     Module.ccall("resizeRenderer", null, ["number", "number"], [width, height])
 }
 
@@ -140,7 +139,6 @@ document.getElementById("join-room").addEventListener("click", () => {
 document.getElementById("create-room-button").addEventListener("click", async () => {
     const http_protocol = is_production ? "https://" : "http://"
     const create_url = `${http_protocol}${url}/create`
-    console.log("Creating room at URL:", create_url)
     const res = await fetch(create_url, {
         method: "POST",
         headers: {
@@ -149,7 +147,6 @@ document.getElementById("create-room-button").addEventListener("click", async ()
     })
 
     const data = await res.json()
-    console.log(data)
     const roomCode = data.room
     open_connection(roomCode)
     document.getElementById("room-modal").classList.add("hidden")
@@ -188,7 +185,18 @@ document.getElementById("room-code-container").addEventListener("click", () => {
 })
 
 document.getElementById("eraser").addEventListener("click", () => {
-    Module.ccall("setDrawMode", null, ["number"], [3])
-    const drawMode = Module.ccall("getDrawMode", "number", [])
-    console.log("draw mode", drawMode)
+    let drawMode = Module.ccall("getDrawMode", "number", [])
+    const eraseButton = document.getElementById("eraser")
+    if (drawMode !== 3) {
+        Module.ccall("setDrawMode", null, ["number"], [3])
+    }
+    else {
+        Module.ccall("setDrawMode", null, ["number"], [0])
+    }
+    drawMode = Module.ccall("getDrawMode", "number", [])
+    if (drawMode === 3)
+        eraseButton.classList.add("active")
+    else
+        eraseButton.classList.remove("active")
+
 })

@@ -34,7 +34,6 @@ const open_connection = (roomCode) => {
             if (check_connection()) {
                 try {
                     serialized_stack = processDrawCommands()
-                    console.log(serialized_stack)
                     let msg = {
                         type: "draw",
                         payload: serialized_stack
@@ -71,7 +70,6 @@ const open_connection = (roomCode) => {
                 const endX = obj.endX
                 const endY = obj.endY
                 const type = obj.type
-                console.log(startX, startY, endX, endY, type)
                 if (type === 0) {
                     Module.ccall(
                         "drawLine",
