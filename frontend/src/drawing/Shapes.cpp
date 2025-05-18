@@ -10,79 +10,52 @@ extern "C" {
 #endif
 EMSCRIPTEN_KEEPALIVE
 void drawLine(
-        int startX,
-        int startY,
-        int endX,
-        int endY,
-        int type,
-        int add_to_stack
+    int startX,
+    int startY,
+    int endX,
+    int endY,
+    int add_to_stack
 ) {
     SDL_SetRenderTarget(gameState.renderer, gameState.drawingTexture);
     SDL_SetRenderDrawColor(gameState.renderer, 255, 255, 255, 255);
     SDL_RenderDrawLine(gameState.renderer, startX, startY, endX, endY);
     SDL_SetRenderTarget(gameState.renderer, NULL);
     if (add_to_stack)
-        addDrawCommand(startX, startY, endX, endY, type);
+        addDrawCommand(startX, startY, endX, endY, LINE);
 }
 
 EMSCRIPTEN_KEEPALIVE
-void drawCircle(SDL_Renderer* renderer, int centerX, int centerY, int radius) {
-    int x = radius;
-    int y = 0;
-    int d = 1 - radius;
-
-    while (x >= y) {
-        SDL_RenderDrawPoint(renderer, centerX + x, centerY + y);
-        SDL_RenderDrawPoint(renderer, centerX + y, centerY + x);
-        SDL_RenderDrawPoint(renderer, centerX - y, centerY + x);
-        SDL_RenderDrawPoint(renderer, centerX - x, centerY + y);
-        SDL_RenderDrawPoint(renderer, centerX - x, centerY - y);
-        SDL_RenderDrawPoint(renderer, centerX - y, centerY - x);
-        SDL_RenderDrawPoint(renderer, centerX + y, centerY - x);
-        SDL_RenderDrawPoint(renderer, centerX + x, centerY - y);
-
-        y += 1;
-
-        if (d <= 0) {
-            d += 2 * y + 1;
-        } else {
-            x -= 1;
-            d += 2 * (y - x) + 1;
-        }
-    }
-}
-
-EMSCRIPTEN_KEEPALIVE
-void drawSquare(SDL_Renderer* renderer, int startX, int startY, int endX, int endY) {
-    int dx = endX - startX;
-    int dy = endY - startY;
-
-    int sideLength = std::max(abs(dx), abs(dy));
-
-    // Maintain the original startX, startY as the anchor point
-    // and adjust the end points to form a square
-    int x2, y2;
+void erase(
+    int startX,
+    int startY,
+    int endX,
+    int endY,
+    int add_to_stack
+) {
+    SDL_SetRenderTarget(gameState.renderer, gameState.drawingTexture);
+    SDL_SetRenderDrawColor(gameState.renderer, 0, 0, 0, 255);
     
-    // Determine the direction of drag and adjust accordingly
-    if (dx >= 0 && dy >= 0) {        // Dragging right and down
-        x2 = startX + sideLength;
-        y2 = startY + sideLength;
-    } else if (dx >= 0 && dy < 0) {  // Dragging right and up
-        x2 = startX + sideLength;
-        y2 = startY - sideLength;
-    } else if (dx < 0 && dy >= 0) {  // Dragging left and down
-        x2 = startX - sideLength;
-        y2 = startY + sideLength;
-    } else {                         // Dragging left and up
-        x2 = startX - sideLength;
-        y2 = startY - sideLength;
+    // Define eraser size (width and height of rectangle)
+    const int eraserSize = 20;
+    const int halfSize = eraserSize / 2;
+    
+    // For smooth erasing, we'll interpolate points between start and end
+    float distance = sqrt(pow(endX - startX, 2) + pow(endY - startY, 2));
+    int steps = (distance < 1) ? 1 : (int)distance * 2; // Double the distance for more density
+    
+    for (int i = 0; i <= steps; i++) {
+        float t = (steps == 0) ? 0.0f : (float)i / (float)steps;
+        int x = startX + (endX - startX) * t;
+        int y = startY + (endY - startY) * t;
+        
+        // Create and draw a filled rectangle centered at the current point
+        SDL_Rect rect = {x - halfSize, y - halfSize, eraserSize, eraserSize};
+        SDL_RenderFillRect(gameState.renderer, &rect);
     }
-
-    // Draw the square
-    SDL_RenderDrawLine(renderer, startX, startY, x2, startY);     // Top edge
-    SDL_RenderDrawLine(renderer, x2, startY, x2, y2);            // Right edge
-    SDL_RenderDrawLine(renderer, x2, y2, startX, y2);            // Bottom edge
-    SDL_RenderDrawLine(renderer, startX, y2, startX, startY);    // Left edge
+    
+    SDL_SetRenderTarget(gameState.renderer, NULL);
+    if (add_to_stack)
+        addDrawCommand(startX, startY, endX, endY, ERASE);
 }
 #ifdef __EMSCRIPTEN__
 }

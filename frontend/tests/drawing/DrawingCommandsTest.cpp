@@ -9,7 +9,7 @@ class DrawingCommandsTests : public testing::Test {
 };
 
 TEST_F(DrawingCommandsTests, AddingDrawCommandsAddsThemToDrawCommandVectorsCorrectly) {
-    int startX = 0, startY = 0, endX = 1, endY = 1, type = FREE;
+    int startX = 0, startY = 0, endX = 1, endY = 1, type = LINE;
     addDrawCommandInternal(startX, startY, endX, endY, type);
 
     ASSERT_THAT(drawStartX, testing::ElementsAre(startX));

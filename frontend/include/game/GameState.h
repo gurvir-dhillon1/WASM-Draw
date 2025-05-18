@@ -14,9 +14,7 @@ struct GameState {
 
     bool mousePressed;
 
-    int lineMode;
-    int circleMode;
-    int squareMode;
+    int drawMode;
 
     int screenWidth;
     int screenHeight;
@@ -36,15 +34,12 @@ extern "C" {
 #endif
 // Window and rendering functions
 bool resizeRenderer(int width, int height);
+
 void clearCanvas();
 
 // Drawing Mode Functions
-int setLineMode(GameState* state);
-int getLineMode(GameState* state);
-int setCircleMode(GameState* state);
-int getCircleMode(GameState* state);
-int setSquareMode(GameState* state);
-int getSquareMode(GameState* state);
+int getDrawMode();
+void setDrawMode(int drawMode);
 
 // Setter Functions
 void setLastMousePosition(GameState* state, int lastMouseX, int lastMouseY);
