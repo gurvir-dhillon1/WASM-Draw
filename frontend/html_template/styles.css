@@ -32,6 +32,10 @@ canvas {
     cursor: pointer;
 }
 
+button {
+    cursor: pointer;
+}
+
 button#clear-canvas,
 button#join-room {
     width: 50px;
@@ -40,11 +44,19 @@ button#join-room {
     border: none;
 }
 .joined {
-    background-color: red;
+    background-color: #ff0000;
+}
+
+.joined:hover {
+    background-color:#ce0000;
 }
 
 .not-joined {
-    background-color: green;
+    background-color: #008000;
+}
+
+.not-joined:hover {
+    background-color:#006b00;
 }
 
 #join-room.not-joined .icon-joined {

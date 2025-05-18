@@ -70,13 +70,19 @@ const open_connection = (roomCode) => {
                 const endX = obj.endX
                 const endY = obj.endY
                 const type = obj.type
-
                 if (type === 0) {
                     Module.ccall(
                         "drawLine",
                         null,
-                        ["number", "number", "number", "number", "number", "number"],
-                        [startX, startY, endX, endY, 0, 0]
+                        ["number", "number", "number", "number", "number"],
+                        [startX, startY, endX, endY, 0]
+                    )
+                } else if (type === 3) {
+                    Module.ccall(
+                        "erase",
+                        null,
+                        ["number", "number", "number", "number", "number"],
+                        [startX, startY, endX, endY, 0]
                     )
                 }
             }
