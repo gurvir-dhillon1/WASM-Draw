@@ -14,9 +14,7 @@ GameState gameState = {
     .renderer = nullptr,
     .drawingTexture = nullptr,
     .mousePressed = false,
-    .lineMode = 0,
-    .circleMode = 0,
-    .squareMode = 0,
+    .drawMode = 0,
     .screenWidth = 800,
     .screenHeight = 600,
     .lastMouseX = -1,
@@ -134,42 +132,14 @@ void clearCanvas() {
 }
 
 EMSCRIPTEN_KEEPALIVE
-int setLineMode(GameState* state) {
-    state->lineMode = !state->lineMode;
-    state->circleMode = 0;
-    state->squareMode = 0;
-    return state->lineMode;
+void setDrawMode(GameState* state, int drawMode) {
+    state->drawMode = drawMode;
+    return;
 }
 
 EMSCRIPTEN_KEEPALIVE
-int getLineMode(GameState* state) {
-    return state->lineMode;
-}
-
-EMSCRIPTEN_KEEPALIVE
-int setCircleMode(GameState* state) {
-    state->lineMode = 0;
-    state->circleMode = !state->circleMode;
-    state->squareMode = 0;
-    return state->circleMode;
-}
-
-EMSCRIPTEN_KEEPALIVE
-int getCircleMode(GameState* state) {
-    return state->circleMode;
-}
-
-EMSCRIPTEN_KEEPALIVE
-int setSquareMode(GameState* state) {
-    state->lineMode = 0;
-    state->circleMode = 0;
-    state->squareMode = !state->squareMode;
-    return state->squareMode;
-}
-
-EMSCRIPTEN_KEEPALIVE
-int getSquareMode(GameState* state) {
-    return state->squareMode;
+int getDrawMode(GameState* state) {
+    return state->drawMode;
 }
 
 EMSCRIPTEN_KEEPALIVE

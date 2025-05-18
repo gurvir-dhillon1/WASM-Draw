@@ -14,7 +14,6 @@ void drawLine(
         int startY,
         int endX,
         int endY,
-        int type,
         int add_to_stack
 ) {
     SDL_SetRenderTarget(gameState.renderer, gameState.drawingTexture);
@@ -22,7 +21,7 @@ void drawLine(
     SDL_RenderDrawLine(gameState.renderer, startX, startY, endX, endY);
     SDL_SetRenderTarget(gameState.renderer, NULL);
     if (add_to_stack)
-        addDrawCommand(startX, startY, endX, endY, type);
+        addDrawCommand(startX, startY, endX, endY, LINE);
 }
 
 EMSCRIPTEN_KEEPALIVE

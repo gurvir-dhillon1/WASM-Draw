@@ -75,8 +75,8 @@ const open_connection = (roomCode) => {
                     Module.ccall(
                         "drawLine",
                         null,
-                        ["number", "number", "number", "number", "number", "number"],
-                        [startX, startY, endX, endY, 0, 0]
+                        ["number", "number", "number", "number", "number"],
+                        [startX, startY, endX, endY, 0]
                     )
                 }
             }

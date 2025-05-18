@@ -4,10 +4,10 @@
 #include <vector>
 
 enum Draw_Modes {
-    FREE,
     LINE,
     CIRCLE,
-    RECT
+    RECT,
+    ERASE
 };
 
 // Global variables for drawing commands

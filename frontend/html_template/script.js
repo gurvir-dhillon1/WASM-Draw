@@ -47,24 +47,6 @@ function setActiveButton(activeButtonId) {
     if (activeButtonId) document.getElementById(activeButtonId).classList.add("active")
 }
 
-const onLineClick = () => {
-    const lineMode = Module.ccall("setLineMode", "number", [])
-    console.log("Line Mode:", lineMode)
-    setActiveButton("line-mode-button")
-}
-
-const onCircleClick = () => {
-    const circleMode = Module.ccall("setCircleMode", "number", [])
-    console.log("Circle Mode:", circleMode)
-    setActiveButton("circle-mode-button")
-}
-
-const onSquareClick = () => {
-    const squareMode = Module.ccall("setSquareMode", "number", [])
-    console.log("Square Mode:", squareMode)
-    setActiveButton("square-mode-button")
-}
-
 const processDrawCommands = () => {
     const newCmdCount = Module.ccall(
         "getNewCommandCount",

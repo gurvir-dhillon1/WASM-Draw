@@ -15,10 +15,10 @@ import (
 
 // Enums for the different drawing types
 const (
-    FREE = iota
-    LINE
+    LINE = iota
     CIRCLE
     RECT
+	ERASE
 )
 
 // this struct helps us Unmarshal and Marshal the incoming JSON bytes
