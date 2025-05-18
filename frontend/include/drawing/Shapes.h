@@ -20,7 +20,8 @@ void erase(
     int startX,
     int startY,
     int endX,
-    int endY
+    int endY,
+    int add_to_stack
 );
 #ifdef __EMSCRIPTEN__
 }

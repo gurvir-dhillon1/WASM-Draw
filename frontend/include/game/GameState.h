@@ -38,8 +38,8 @@ bool resizeRenderer(int width, int height);
 void clearCanvas();
 
 // Drawing Mode Functions
-int getDrawMode(GameState* state);
-void setDrawMode(GameState* state, int drawMode);
+int getDrawMode();
+void setDrawMode(int drawMode);
 
 // Setter Functions
 void setLastMousePosition(GameState* state, int lastMouseX, int lastMouseY);

@@ -10,11 +10,11 @@ extern "C" {
 #endif
 EMSCRIPTEN_KEEPALIVE
 void drawLine(
-        int startX,
-        int startY,
-        int endX,
-        int endY,
-        int add_to_stack
+    int startX,
+    int startY,
+    int endX,
+    int endY,
+    int add_to_stack
 ) {
     SDL_SetRenderTarget(gameState.renderer, gameState.drawingTexture);
     SDL_SetRenderDrawColor(gameState.renderer, 255, 255, 255, 255);
@@ -24,6 +24,22 @@ void drawLine(
         addDrawCommand(startX, startY, endX, endY, LINE);
 }
 
+EMSCRIPTEN_KEEPALIVE
+void erase(
+    int startX,
+    int startY,
+    int endX,
+    int endY,
+    int add_to_stack
+) {
+    SDL_SetRenderTarget(gameState.renderer, gameState.drawingTexture);
+    SDL_SetRenderDrawColor(gameState.renderer, 0, 0, 0, 255);
+    
+    SDL_RenderDrawLine(gameState.renderer, startX, startY, endX, endY);
+    SDL_SetRenderTarget(gameState.renderer, NULL);
+    if (add_to_stack)
+        addDrawCommand(startX, startY, endX, endY, ERASE);
+}
 #ifdef __EMSCRIPTEN__
 }
 #endif

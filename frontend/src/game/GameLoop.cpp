@@ -13,7 +13,7 @@ void gameLoop(void* arg) {
         switch (event.type) {
             case SDL_MOUSEMOTION:
                 if (state->mousePressed) {
-                    if (getDrawMode(state) == LINE) {
+                    if (getDrawMode() == LINE) {
                         drawLine( 
                             state->lastMouseX,
                             state->lastMouseY, 
@@ -22,6 +22,15 @@ void gameLoop(void* arg) {
                             1
                         );
 
+                        setLastMousePosition(state, event.motion.x, event.motion.y);
+                    } else if (getDrawMode() == ERASE) {
+                        erase(
+                            state->lastMouseX,
+                            state->lastMouseY, 
+                            event.motion.x,
+                            event.motion.y,
+                            1
+                        );
                         setLastMousePosition(state, event.motion.x, event.motion.y);
                     }
                 }

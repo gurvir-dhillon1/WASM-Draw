@@ -90,18 +90,6 @@ const processDrawCommands = () => {
     return cmds
 }
 
-document.getElementById("canvas").addEventListener("mouseup", () => {
-    setTimeout(() => {
-        const lineMode = Module.ccall("getLineMode", "number", [])
-        const circleMode = Module.ccall("getCircleMode", "number", [])
-        const squareMode = Module.ccall("getSquareMode", "number", [])
-
-        if (lineMode == 0 && circleMode == 0 && squareMode == 0) {
-            setActiveButton(null)
-        }
-    }, 100)
-})
-
 window.addEventListener("resize", resizeCanvas)
 
 const resetZoom = () => {
@@ -197,4 +185,10 @@ document.getElementById("room-code-container").addEventListener("click", () => {
     const roomCode = document.getElementById("room-code").textContent.split(":")[1].trim()
     navigator.clipboard.writeText(roomCode)
     alert("Room code copied!")
+})
+
+document.getElementById("eraser").addEventListener("click", () => {
+    Module.ccall("setDrawMode", null, ["number"], [3])
+    const drawMode = Module.ccall("getDrawMode", "number", [])
+    console.log("draw mode", drawMode)
 })

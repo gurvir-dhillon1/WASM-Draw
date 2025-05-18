@@ -132,14 +132,14 @@ void clearCanvas() {
 }
 
 EMSCRIPTEN_KEEPALIVE
-void setDrawMode(GameState* state, int drawMode) {
-    state->drawMode = drawMode;
+void setDrawMode(int drawMode) {
+    gameState.drawMode = drawMode;
     return;
 }
 
 EMSCRIPTEN_KEEPALIVE
-int getDrawMode(GameState* state) {
-    return state->drawMode;
+int getDrawMode() {
+    return gameState.drawMode;
 }
 
 EMSCRIPTEN_KEEPALIVE
