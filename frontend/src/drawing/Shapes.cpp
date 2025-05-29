@@ -57,6 +57,21 @@ void erase(
     if (add_to_stack)
         addDrawCommand(startX, startY, endX, endY, ERASE);
 }
+
+void drawEntireStack() {
+    for (int i = 0; i < drawStartX.size(); ++i) {
+        switch (drawTypes[i]) {
+            case LINE:
+                drawLine(drawStartX[i], drawStartY[i], drawEndX[i], drawEndY[i], false);
+                break;
+            case ERASE:
+                erase(drawStartX[i], drawStartY[i], drawEndX[i], drawEndY[i], false);
+                break;
+            default:
+                break;
+        }
+    }
+}
 #ifdef __EMSCRIPTEN__
 }
 #endif

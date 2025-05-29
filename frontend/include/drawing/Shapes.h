@@ -23,6 +23,7 @@ void erase(
     int endY,
     int add_to_stack
 );
+void drawEntireStack();
 #ifdef __EMSCRIPTEN__
 }
 #endif

@@ -1,6 +1,7 @@
 // src/game/GameState.cpp
 #include "game/GameState.h"
 #include "drawing/DrawingCommands.h"
+#include "drawing/Shapes.h"
 #include <iostream>
 
 #ifdef __EMSCRIPTEN__
@@ -118,6 +119,9 @@ bool resizeRenderer(int width, int height) {
 
     SDL_SetWindowSize(gameState.window, width, height);
     SDL_RenderSetLogicalSize(gameState.renderer, width, height);
+
+
+    drawEntireStack();
     
     return true;
 }
