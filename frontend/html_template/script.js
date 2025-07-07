@@ -37,6 +37,10 @@ function resizeCanvas() {
     let width = window.innerWidth
     let height = window.innerHeight
     Module.ccall("resizeRenderer", null, ["number", "number"], [width, height])
+    if (websocket) {
+        msg = {type: "draw-all"}
+        websocket.send(JSON.stringify(msg))
+  }
 }
 
 function setActiveButton(activeButtonId) {
@@ -101,7 +105,6 @@ const resetZoom = () => {
         setTimeout(() => {
             viewportMeta.content = "width=device-width, initial-scale=1.0"
         }, 300);;
-        
     }
 }
 
