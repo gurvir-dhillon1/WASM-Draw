@@ -204,21 +204,26 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 			room.canvas = []DrawCommand{}
 			room.mu.Unlock()
 		case "draw-all":
+			room.mu.Lock()
 			canvasData, err := json.Marshal(room.canvas)
+			room.mu.Unlock()
+
 			if err != nil {
 				log.Println("Marshal room.canvas:", err)
 				continue
 			}
 			broadcastData, err := json.Marshal(WebSocketMessage{
-				Type:    "draw-all",
+				Type:    "draw",
 				Payload: canvasData,
 			})
 			if err != nil {
 				log.Println("Marshal broadcastData:", err)
+				continue
 			}
 			err = conn.WriteMessage(messageType, broadcastData)
 			if err != nil {
 				log.Println("WriteMessage:", err)
+				continue
 			}
 		default:
 			log.Println("Unknown message type:", msg.Type)
