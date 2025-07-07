@@ -39,6 +39,7 @@ type WebSocketMessage struct {
 type Room struct {
 	clients	map[*websocket.Conn]bool
 	mu		sync.Mutex
+	canvas	[]DrawCommand
 }
 
 var mu sync.Mutex
@@ -184,6 +185,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 						}
 					}
 				}
+				room.canvas = append(room.canvas, drawCommands...)
 				room.mu.Unlock()
 			case "clear-canvas":
 				broadcastData, err := json.Marshal(WebSocketMessage{ Type: "clear-canvas" })
@@ -198,6 +200,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 						log.Println("WriteMessage: ", err)
 					}
 				}
+				room.canvas = []DrawCommand{}
 				room.mu.Unlock()
 			default:
 				log.Println("Unknown message type:", msg.Type)
