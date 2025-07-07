@@ -214,11 +214,11 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 				Payload: canvasData,
 			})
 			if err != nil {
-
+				log.Println("Marshal broadcastData:", err)
 			}
 			err = conn.WriteMessage(messageType, broadcastData)
 			if err != nil {
-
+				log.Println("WriteMessage:", err)
 			}
 		default:
 			log.Println("Unknown message type:", msg.Type)
