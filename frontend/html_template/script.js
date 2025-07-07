@@ -1,4 +1,5 @@
 console.log("initializing script.js")
+let resizeTimeout
 var Module = {
     preRun: [],
     postRun: [],
@@ -38,8 +39,14 @@ function resizeCanvas() {
     let height = window.innerHeight
     Module.ccall("resizeRenderer", null, ["number", "number"], [width, height])
     if (websocket) {
-        msg = {type: "draw-all"}
-        websocket.send(JSON.stringify(msg))
+        if (resizeTimeout) {
+            clearTimeout(resizeTimeout)
+        }
+        resizeTimeout = setTimeout(() => {
+            console.log("sending message to get all canvas")
+            const msg = {type: "draw-all"}
+            websocket.send(JSON.stringify(msg))
+        }, 200)
   }
 }
 
