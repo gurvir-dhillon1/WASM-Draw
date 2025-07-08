@@ -1,4 +1,5 @@
 console.log("initializing script.js")
+let resizeTimeout
 var Module = {
     preRun: [],
     postRun: [],
@@ -37,6 +38,16 @@ function resizeCanvas() {
     let width = window.innerWidth
     let height = window.innerHeight
     Module.ccall("resizeRenderer", null, ["number", "number"], [width, height])
+    if (websocket) {
+        if (resizeTimeout) {
+            clearTimeout(resizeTimeout)
+        }
+        resizeTimeout = setTimeout(() => {
+            console.log("sending message to get all canvas")
+            const msg = {type: "draw-all"}
+            websocket.send(JSON.stringify(msg))
+        }, 200)
+  }
 }
 
 function setActiveButton(activeButtonId) {
@@ -101,7 +112,6 @@ const resetZoom = () => {
         setTimeout(() => {
             viewportMeta.content = "width=device-width, initial-scale=1.0"
         }, 300);;
-        
     }
 }
 

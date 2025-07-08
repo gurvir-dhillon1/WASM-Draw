@@ -1,51 +1,53 @@
 package main
 
 import (
-    "github.com/gorilla/websocket"
-    "encoding/json"
-    "net/http"
-    "log"
-    "os"
-    "sync"
-    "github.com/joho/godotenv"
+	"encoding/json"
+	"log"
 	"math/rand"
-	"time"
+	"net/http"
+	"os"
 	"strings"
+	"sync"
+	"time"
+
+	"github.com/gorilla/websocket"
+	"github.com/joho/godotenv"
 )
 
 // Enums for the different drawing types
 const (
-    LINE = iota
-    CIRCLE
-    RECT
+	LINE = iota
+	CIRCLE
+	RECT
 	ERASE
 )
 
 // this struct helps us Unmarshal and Marshal the incoming JSON bytes
 // from the frontend
 type DrawCommand struct {
-    StartX int      `json:"startX"`
-    StartY int      `json:"startY"`
-    EndX   int      `json:"endX"`
-    EndY   int      `json:"endY"`
-    Type   int      `json:"type"`
+	StartX int `json:"startX"`
+	StartY int `json:"startY"`
+	EndX   int `json:"endX"`
+	EndY   int `json:"endY"`
+	Type   int `json:"type"`
 }
 
 type WebSocketMessage struct {
-	Type	string			`json:"type"`
-	Payload	json.RawMessage	`json:"payload"`
+	Type    string          `json:"type"`
+	Payload json.RawMessage `json:"payload"`
 }
 
 type Room struct {
-	clients	map[*websocket.Conn]bool
-	mu		sync.Mutex
+	clients map[*websocket.Conn]bool
+	mu      sync.Mutex
+	canvas  []DrawCommand
 }
 
 var mu sync.Mutex
 var upgrader = websocket.Upgrader{
-    CheckOrigin: func(r *http.Request) bool {
-        return true
-    },
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
 }
 
 // map of current rooms
@@ -118,12 +120,12 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    conn, err := upgrader.Upgrade(w, r, nil)
-    if err != nil {
-        log.Println("Upgrade: ", err)
-        return
-    }
-    defer conn.Close()
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println("Upgrade: ", err)
+		return
+	}
+	defer conn.Close()
 
 	room.mu.Lock()
 	room.clients[conn] = true
@@ -131,10 +133,10 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Client joined room %s", roomCode)
 
-    for {
-        messageType, payload, err := conn.ReadMessage()
-        if err != nil {
-            log.Println("ReadMessage: ", err)
+	for {
+		messageType, payload, err := conn.ReadMessage()
+		if err != nil {
+			log.Println("ReadMessage: ", err)
 			room.mu.Lock()
 			delete(room.clients, conn)
 			isEmpty := len(room.clients) == 0
@@ -147,72 +149,96 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 				log.Printf("Room %s deleted (empty)", roomCode)
 			}
 			log.Printf("Client disconnected from room %s", roomCode)
-            return
-        }
+			return
+		}
 
-        var msg WebSocketMessage
-        err = json.Unmarshal(payload, &msg)
-        if err != nil {
-            log.Println("Unmarshal: ", err)
-            return
-        }
+		var msg WebSocketMessage
+		err = json.Unmarshal(payload, &msg)
+		if err != nil {
+			log.Println("Unmarshal: ", err)
+			return
+		}
 		switch msg.Type {
-			case "draw":
-				var drawCommands []DrawCommand
-				err = json.Unmarshal(msg.Payload, &drawCommands)
-				if err != nil {
-					log.Println("Unmarshal DrawCommands:", err)
-					continue
-				}
-				broadcastData, err := json.Marshal(WebSocketMessage{
-					Type: "draw",
-					Payload: msg.Payload,
-				})
-				if err != nil {
-					log.Println("Marshal: ", err)
-					return
-				}
+		case "draw":
+			var drawCommands []DrawCommand
+			err = json.Unmarshal(msg.Payload, &drawCommands)
+			if err != nil {
+				log.Println("Unmarshal DrawCommands:", err)
+				continue
+			}
+			broadcastData, err := json.Marshal(WebSocketMessage{
+				Type:    "draw",
+				Payload: msg.Payload,
+			})
+			if err != nil {
+				log.Println("Marshal: ", err)
+				return
+			}
 
-				room.mu.Lock()
-				for client := range room.clients {
-					if client != conn {
-						err = client.WriteMessage(messageType, broadcastData)
-						if err != nil {
-							log.Println("WriteMessage: ", err)
-							client.Close()
-							delete(room.clients, client)
-						}
-					}
-				}
-				room.mu.Unlock()
-			case "clear-canvas":
-				broadcastData, err := json.Marshal(WebSocketMessage{ Type: "clear-canvas" })
-				if err != nil {
-					log.Println("Marshal:", err)
-					continue
-				}
-				room.mu.Lock()
-				for client := range room.clients {
+			room.mu.Lock()
+			for client := range room.clients {
+				if client != conn {
 					err = client.WriteMessage(messageType, broadcastData)
 					if err != nil {
 						log.Println("WriteMessage: ", err)
+						client.Close()
+						delete(room.clients, client)
 					}
 				}
-				room.mu.Unlock()
-			default:
-				log.Println("Unknown message type:", msg.Type)
+			}
+			room.canvas = append(room.canvas, drawCommands...)
+			room.mu.Unlock()
+		case "clear-canvas":
+			broadcastData, err := json.Marshal(WebSocketMessage{Type: "clear-canvas"})
+			if err != nil {
+				log.Println("Marshal:", err)
+				continue
+			}
+			room.mu.Lock()
+			for client := range room.clients {
+				err = client.WriteMessage(messageType, broadcastData)
+				if err != nil {
+					log.Println("WriteMessage: ", err)
+				}
+			}
+			room.canvas = []DrawCommand{}
+			room.mu.Unlock()
+		case "draw-all":
+			room.mu.Lock()
+			canvasData, err := json.Marshal(room.canvas)
+			room.mu.Unlock()
+
+			if err != nil {
+				log.Println("Marshal room.canvas:", err)
+				continue
+			}
+			broadcastData, err := json.Marshal(WebSocketMessage{
+				Type:    "draw",
+				Payload: canvasData,
+			})
+			if err != nil {
+				log.Println("Marshal broadcastData:", err)
+				continue
+			}
+			err = conn.WriteMessage(messageType, broadcastData)
+			if err != nil {
+				log.Println("WriteMessage:", err)
+				continue
+			}
+		default:
+			log.Println("Unknown message type:", msg.Type)
 		}
-    }
+	}
 }
 
 func main() {
-    log.SetFlags(0)
-    err := godotenv.Load()
-    if err != nil {
-        log.Println("failed to load env files", err)
-    }
-    port := os.Getenv("PORT")
-    host := os.Getenv("HOST")
+	log.SetFlags(0)
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("failed to load env files", err)
+	}
+	port := os.Getenv("PORT")
+	host := os.Getenv("HOST")
 	corsOrigin := os.Getenv("ALLOWED_ORIGINS")
 	if corsOrigin == "" {
 		allowedOrigins = []string{
@@ -225,18 +251,18 @@ func main() {
 			allowedOrigins[i] = strings.TrimSpace(origin)
 		}
 	}
-    if (port == "" || host == "") {
-        log.Fatal("host or port env variables not defined")
-    }
+	if port == "" || host == "" {
+		log.Fatal("host or port env variables not defined")
+	}
 
-    address := host + ":" + port
-    http.HandleFunc("/ws", handleWebSocket)
+	address := host + ":" + port
+	http.HandleFunc("/ws", handleWebSocket)
 	http.HandleFunc("/create", createRoom)
 
-    log.Printf("server started at %v", address)
+	log.Printf("server started at %v", address)
 
-    err = http.ListenAndServe(address, nil)
-    if err != nil {
-        log.Fatal("ListenAndServe: ", err)
-    }
+	err = http.ListenAndServe(address, nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
 }
